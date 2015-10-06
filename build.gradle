@@ -1,0 +1,7 @@
+task clean(type:Exec) {
+  commandLine 'gnumake', 'clean'
+}
+
+task assemble(type:Exec) {
+  commandLine 'sh', 'install-deps.sh', 'install_osx', '&&', 'gnumake', 'check', 'M32='
+}
