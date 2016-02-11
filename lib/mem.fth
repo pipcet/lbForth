@@ -22,8 +22,8 @@
 : 4l,   dup 2l, 16 rshift 2l, ;
 : 4l+!   tuck 4l@ + swap 4l! ;
 
-: 2b@   dup 1+ c@ swap c@ 8 lshift + ;
 (*
+: 2b@   dup 1+ c@ swap c@ 8 lshift + ;
 : 2b!   2dup 1+ c!  swap 8 rshift swap c! ;
 : 2b,   dup 8 rshift c, c, ;
 : 2b+!   tuck 2b@ + swap 2b! ;
