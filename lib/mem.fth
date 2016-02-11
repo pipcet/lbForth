@@ -24,10 +24,10 @@
 
 : 2b@   dup 1+ c@ swap c@ 8 lshift + ;
 : 2b!   2dup 1+ c!  swap 8 rshift swap c! ;
+(*
 : 2b,   dup 8 rshift c, c, ;
 : 2b+!   tuck 2b@ + swap 2b! ;
 
-(*
 : 4b@   dup 2 + 2b@ swap 2b@ 16 lshift + ;
 : 4b!   2dup 2 + 2b!  swap 16 rshift swap c! ;
 : 4b,   dup 16 rshift 2b, 2b, ;
