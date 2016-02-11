@@ -12,12 +12,12 @@
 : w! ( x a -- )   2dup h!  swap 16 rshift swap 2 + h! ;
 : w, ( x -- )   here w!  4 allot ;
 
-(*
 : 2l@   dup 1+ c@ 8 lshift swap c@ + ;
 : 2l!   2dup c!  swap 8 rshift swap 1+ c! ;
 : 2l,   dup c, 8 rshift c, ;
 : 2l+!   tuck 2l@ + swap 2l! ;
 
+(*
 : 4l@   dup 2 + 2l@ 16 lshift swap 2l@ + ;
 : 4l!   2dup 2l!  swap 16 rshift swap 2 + 2l! ;
 : 4l,   dup 2l, 16 rshift 2l, ;
