@@ -185,8 +185,8 @@ code read-file ( addr u1 fileid -- u2 ior )
        for (i = 0; (i>>>0) < (u1>>>0); i = (i+1)|0) {
            HEAPU8[(addr+i)|0] = HEAPU8[(fileid+32+off+i)|0]|0;
        }
+       HEAPU32[fileid+4>>2] = (off + i)|0;
     }
-    HEAPU32[fileid+4>>2] = (off + i)|0;
 
     PUSH (i|0);
     PUSH (0);

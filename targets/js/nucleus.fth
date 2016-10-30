@@ -169,7 +169,10 @@ code read-file ( addr u1 fileid -- u2 ior )
        fhs[0] = { offset: 1023 * 1024 };
        for (let i = 0; i < 1024; i++)
            HEAPU8[1023 * 1024 + i] = 0;
-       let str = readline();
+       let str;
+       do {
+          str = readline();
+       } while (str === "");
        let len = CStringTo(str, HEAPU8, fhs[0].offset);
        HEAPU8[1024 * 1023 + len - 1] = "\n".charCodeAt(0);
        HEAPU8[1024 * 1023 + len] = 0;
