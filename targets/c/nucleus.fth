@@ -67,7 +67,8 @@ end-code
 
 code @ ( addr -- x )
     cell *addr = POP (cell *);
-    PUSH (*addr);
+    cell val = *addr;
+    PUSH (val);
 end-code
 
 \ : +   begin ?dup while 2dup xor -rot and 2* repeat ;
@@ -108,7 +109,8 @@ end-code
 
 code c@ ( addr -- c )
     uchar_t *addr = POP (uchar_t *);
-    PUSH (*addr);
+    uchar_t val = *addr;
+    PUSH (val);
 end-code
 
 code emit ( c -- )
