@@ -67,14 +67,7 @@ code ! ( x addr -- )
 end-code
 
 code @ ( addr -- x )
-    var val = 0;
-    var addr = 0;
-
-    addr = POP ()|0;
-    PUSH (0);
-    val = HEAPU32[addr>>2]|0;
-    POP ()|0;
-    PUSH (val);
+    SETTOP (HEAPU32[(TOP ()|0)>>2]|0);
 end-code
 
 \ : +   begin ?dup while 2dup xor -rot and 2* repeat ;
@@ -131,6 +124,78 @@ code emit ( c -- )
     var c = 0;
     c = POP ()|0;
     foreign_putchar (c|0)|0;
+end-code
+
+\ optional words
+
+code dup
+    PUSH (TOP ()|0);
+end-code
+
+code 0=
+    var c = 0;
+    c = TOP ()|0;
+    if ((c|0) == 0)
+        c = 1;
+    else
+        c = 0;
+    SETTOP (c);
+end-code
+
+code 0<>
+    var c = 0;
+    c = TOP ()|0;
+    if ((c|0) == 0)
+        c = 0;
+    else
+        c = 1;
+    SETTOP (c);
+end-code
+
+code drop
+    POP ()|0;
+end-code
+
+code ?dup
+    var v = 0;
+    v = TOP ()|0;
+    if (v|0)
+        PUSH (v|0);
+end-code
+
+code swap
+    var x = 0;
+    var y = 0;
+    x = POP ()|0;
+    y = POP ()|0;
+    PUSH (x);
+    PUSH (y);
+end-code
+
+code over
+    PUSH (TOP2 ()|0);
+end-code
+
+code invert
+    SETTOP (~(TOP ()|0));
+end-code
+
+code xor ( x y -- x^y )
+    var y = 0;
+    y = POP ()|0;
+    SETTOP (((TOP ()|0)^y)|0);
+end-code
+
+code or
+    var y = 0;
+    y = POP ()|0;
+    SETTOP (((TOP ()|0)|y)|0);
+end-code
+
+code and ( x y -- x&y )
+    var y = 0;
+    y = POP ()|0;
+    SETTOP (((TOP ()|0)&y)|0);
 end-code
 
 code bye ( ... -- <no return> )

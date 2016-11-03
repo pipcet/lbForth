@@ -129,8 +129,8 @@ vocabulary does-table  also does-table definitions previous
 
 0 does: create noop
 0 does: variable noop
-1 does: constant dup
-1 does: value dup
+2 does: constant r@
+2 does: value r@
 0 does: defer perform
 
 only forth definitions

@@ -284,6 +284,13 @@ function TOP()
     return ret|0;
 }
 
+function TOP2()
+{
+    var ret = 0;
+    ret = HEAPU32[(HEAPU32[SP_word.link.addr + 28 >> 2]|0) + 4 >> 2]|0;
+    return ret|0;
+}
+
 function SETTOP(val)
 {
     val = val|0;
@@ -521,6 +528,7 @@ function foreign_read_file(addr, u1, fileid)
         console.log(RPUSH.toString().replace(/RP_word.link.addr/g, RP_word.link.addr));
         console.log(TOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(SETTOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
+        console.log(TOP2.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         while (gIDMap.size & (gIDMap.size-1))
             get_id(function (IP, word) { IP = IP|0; word = word|0; return IP|0; });
         for (let [code, index] of gIDMap) {

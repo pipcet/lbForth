@@ -172,7 +172,7 @@ only forth also meta also t-words resolve-all-forward-refs
 only forth also meta
 exe-end
 
-save-target bye
+save-target
 
 host also meta
 
