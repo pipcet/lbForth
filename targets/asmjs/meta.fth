@@ -129,8 +129,8 @@ vocabulary does-table  also does-table definitions previous
 
 0 does: create noop
 0 does: variable noop
-1 does: constant dup
-1 does: value dup
+0 does: constant my@
+0 does: value my@
 0 does: defer perform
 
 only forth definitions
@@ -257,14 +257,14 @@ interpreter-context definitions also host-interpreter
 : create    parse-name header, postcode dodoes reveal does> ;
 
 : .code1   ." function " latestxt >name .mangled
-   ." _code (IP, word)" cr s"     return IP|0;" latestxt ;
+   ." _code (IP, word)" cr s" " latestxt ;
 
 : .code2   source >in @ /string type cr s" "
    parse-name 2drop parse-name save-function-name ;
 
 : code   parse-name header,
    parse-name s" \" compare if .code1 else .code2 then , reveal
-   ." {" cr ." IP=IP|0;" cr ." word = word|0;" cr begin refill 0= abort" Refill?" source s" end-code" compare
+   ." {" cr begin refill 0= abort" Refill?" source s" end-code" compare
    while source type cr repeat type cr ." }" cr ;
 
 : end-code   ;
@@ -454,7 +454,6 @@ only forth definitions also meta-interpreter also host-interpreter
 ( Start metacompilation. )
 
 interpreter-context
-s" docol," .extern
 include targets/asmjs/nucleus.fth
 include kernel.fth
 resolve-all-forward-references

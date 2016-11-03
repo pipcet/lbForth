@@ -25,7 +25,7 @@ variable RP
 [then]
 
 : cell    cell ; \ Metacompiler knows what to do.
-: cell+   cell + ;
+?: cell+   cell + ;
 
 ?: sp@   SP @ cell + ;
 ?: sp!   SP ! ;
@@ -46,6 +46,7 @@ variable  temp
 ?: 2>r   r> swap rot >r >r >r ;
 ?: 2r>   r> r> r> rot >r swap ;
 
+?: my@ @ ;
 ?: dup    sp@ @ ;
 ?: 2dup   over over ;
 : 3dup   >r >r r@ over 2r> over >r rot swap r> ;
