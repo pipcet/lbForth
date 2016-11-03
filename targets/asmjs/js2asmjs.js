@@ -547,6 +547,7 @@ function foreign_read_file(addr, u1, fileid)
         console.log("    \"use asm\";");
         console.log("    var HEAPU8 = new stdlib.Uint8Array(buffer);")
         console.log("    var HEAPU32 = new stdlib.Uint32Array(buffer);")
+        console.log("    var imul = stdlib.Math.imul;");
         console.log("    var foreign_putchar = foreign.putchar;");
         console.log("    var foreign_open_file = foreign.open_file;");
         console.log("    var foreign_read_file = foreign.read_file;");
@@ -586,6 +587,6 @@ function foreign_read_file(addr, u1, fileid)
                 console.log("HEAPU8[" + i + "] = " + HEAPU8[i] + "; // " + describe(i));
         }
 
-        console.log("try { lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain(HEAPU32[0 >> 2]|0, 0, 64*1024 + 4096, 64*1024 + 8192) } catch (e) { console.log(e)}");
+        console.log("try { lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array, Math: Math }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain(HEAPU32[0 >> 2]|0, 0, 64*1024 + 4096, 64*1024 + 8192) } catch (e) { console.log(e)}");
     }
 }

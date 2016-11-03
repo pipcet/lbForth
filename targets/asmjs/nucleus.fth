@@ -302,6 +302,22 @@ code +!
     SP=SP+4|0;
 end-code
 
+code 2*
+    HEAPU32[SP>>2] = (top|0) + (top|0)|0;
+end-code
+
+code *
+    SP=SP+4|0;
+    HEAPU32[SP>>2] = imul(top|0, HEAPU32[SP>>2]|0)|0;
+end-code
+
+code tuck
+    SP=SP-4|0;
+    HEAPU32[SP+4>>2] = HEAPU32[SP+8>>2]|0;
+    HEAPU32[SP+8>>2] = top|0;
+    HEAPU32[SP>>2] = top|0;
+end-code
+
 code bye ( ... -- <no return> )
     foreign_exit(0)|0;
 end-code
