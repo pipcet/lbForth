@@ -277,6 +277,19 @@ function RPOP()
     return ret|0;
 }
 
+function TOP()
+{
+    var ret = 0;
+    ret = HEAPU32[HEAPU32[SP_word.link.addr + 28 >> 2] >> 2]|0;
+    return ret|0;
+}
+
+function SETTOP(val)
+{
+    val = val|0;
+    HEAPU32[HEAPU32[SP_word.link.addr + 28 >> 2] >> 2] = val|0;
+}
+
 function init_vars()
 {
     HEAPU32[sp0_word.link.addr + 28 >> 2] = 64*1024 + 4096;
@@ -459,7 +472,12 @@ function foreign_read_file(addr, u1, fileid)
        fhs[0] = { offset: 1023 * 1024 };
        for (let i = 0; i < 1024; i++)
            HEAPU8[1023 * 1024 + i] = 0;
-       let str = readline();
+       let str;
+       do {
+           str = readline();
+       } while (str === "");
+       if (!str)
+           throw 0;
        let len = CStringTo(str, HEAPU8, fhs[0].offset + 32);
        HEAPU8[1024 * 1023 + 32 + len - 1] = "\\n".charCodeAt(0);
        HEAPU8[1024 * 1023 + 32 + len] = 0;
@@ -501,6 +519,8 @@ function foreign_read_file(addr, u1, fileid)
         console.log(PUSH.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(RPOP.toString().replace(/RP_word.link.addr/g, RP_word.link.addr));
         console.log(RPUSH.toString().replace(/RP_word.link.addr/g, RP_word.link.addr));
+        console.log(TOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
+        console.log(SETTOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         while (gIDMap.size & (gIDMap.size-1))
             get_id(function (IP, word) { IP = IP|0; word = word|0; return IP|0; });
         for (let [code, index] of gIDMap) {
@@ -519,6 +539,6 @@ function foreign_read_file(addr, u1, fileid)
                 console.log("HEAPU8[" + i + "] = " + HEAPU8[i] + "; // " + describe(i));
         }
 
-        console.log("lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain()");
+        console.log("try { lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain() } catch (e) { }");
     }
 }
