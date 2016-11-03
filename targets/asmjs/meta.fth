@@ -454,7 +454,6 @@ only forth definitions also meta-interpreter also host-interpreter
 ( Start metacompilation. )
 
 interpreter-context
-s" docol," .extern
 include targets/asmjs/nucleus.fth
 include kernel.fth
 resolve-all-forward-references
