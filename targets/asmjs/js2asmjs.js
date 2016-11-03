@@ -6,6 +6,8 @@ var HEAPU32;
 
 var docolcomma4_ip = ["docolcomma", 4 + 7];
 
+var snippets = {};
+
 /* Library functions */
 
 function CStringTo(str, heap, offset)
@@ -329,6 +331,31 @@ function asmmain()
     }
 }
 
+snippets.asmmain0 = `
+function asmmain(word, IP, SP, RP)
+{
+    word = word|0;
+    IP = IP|0;
+    SP = SP|0;
+    RP = RP|0;
+    var addr = 0;
+    var x = 0;
+    var y = 0;
+    var z = 0;
+    var c = 0;
+    var i = 0;
+
+    while (1|0) {
+        switch (HEAPU32[word+24>>2]|0) {
+`;
+
+snippets.asmmain1 = `
+        }
+        word = HEAPU32[IP>>2]|0;
+        IP = IP + 4|0;
+    }
+}`;
+
 var dump = true;
 
 function asmjs_table()
@@ -529,15 +556,22 @@ function foreign_read_file(addr, u1, fileid)
         console.log(TOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(SETTOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(TOP2.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
-        while (gIDMap.size & (gIDMap.size-1))
-            get_id(function (IP, word) { IP = IP|0; word = word|0; return IP|0; });
+        //while (gIDMap.size & (gIDMap.size-1))
+        //    get_id(function (IP, word) { IP = IP|0; word = word|0; return IP|0; });
         for (let [code, index] of gIDMap) {
             code = code.toString().replace(/^function [a-zA-Z0-9_]*/, "function f_" + index);
-            console.log(code);
+            code = code.replace("function f_" + index + "(IP, word)\n{", "case " + index + ":\n");
+            //code = code.replace(/TOP \(\)/g, "HEAPU32[" + (SP_word.link.addr + 28) + ">>2]");
+            code = code.replace(/}$/, "break;");
+            snippets[index] = code;
         }
 
-        console.log(asmmain);
-        asmjs_table();
+        console.log(snippets.asmmain0);
+        for (let i = 0; i + "" in snippets; i++)
+            console.log(snippets[i]);
+        console.log(snippets.asmmain1);
+
+        //asmjs_table();
         console.log("return { asmmain: asmmain };");
         console.log("}");
 
@@ -547,6 +581,6 @@ function foreign_read_file(addr, u1, fileid)
                 console.log("HEAPU8[" + i + "] = " + HEAPU8[i] + "; // " + describe(i));
         }
 
-        console.log("try { lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain() } catch (e) { }");
+        console.log("try { lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain(HEAPU32[0 >> 2]|0, 0, 64*1024 + 4096, 64*1024 + 8192) } catch (e) { console.log(e)}");
     }
 }
