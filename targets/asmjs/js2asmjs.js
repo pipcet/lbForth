@@ -344,12 +344,15 @@ function asmmain(word, IP, SP, RP)
     var z = 0;
     var c = 0;
     var i = 0;
+    var top = 0;
 
     while (1|0) {
+        top = HEAPU32[SP>>2]|0;
         switch (HEAPU32[word+24>>2]|0) {
 `;
 
 snippets.asmmain1 = `
+        
         }
         word = HEAPU32[IP>>2]|0;
         IP = IP + 4|0;
@@ -549,6 +552,7 @@ function foreign_read_file(addr, u1, fileid)
         console.log("    var foreign_read_file = foreign.read_file;");
         console.log("    var foreign_exit = foreign.exit;");
 
+        /*
         console.log(POP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(PUSH.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(RPOP.toString().replace(/RP_word.link.addr/g, RP_word.link.addr));
@@ -556,6 +560,7 @@ function foreign_read_file(addr, u1, fileid)
         console.log(TOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(SETTOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
         console.log(TOP2.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
+        */
         //while (gIDMap.size & (gIDMap.size-1))
         //    get_id(function (IP, word) { IP = IP|0; word = word|0; return IP|0; });
         for (let [code, index] of gIDMap) {

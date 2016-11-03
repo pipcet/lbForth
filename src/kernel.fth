@@ -25,7 +25,7 @@ variable RP
 [then]
 
 : cell    cell ; \ Metacompiler knows what to do.
-: cell+   cell + ;
+?: cell+   cell + ;
 
 ?: sp@   SP @ cell + ;
 ?: sp!   SP ! ;
