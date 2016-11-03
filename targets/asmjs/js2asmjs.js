@@ -352,12 +352,20 @@ function asmmain(word, IP, SP, RP)
 `;
 
 snippets.asmmain1 = `
-        
         }
         word = HEAPU32[IP>>2]|0;
         IP = IP + 4|0;
     }
 }`;
+
+function init_snippets() {
+    for (let [code, index] of gIDMap) {
+        code = code.toString().replace(/^function [a-zA-Z0-9_]*/, "function f_" + index);
+        code = code.replace("function f_" + index + "(IP, word)\n{", "case " + index + ":\n");
+        code = code.replace(/}$/, "break;");
+        snippets[index] = code;
+    }
+}
 
 var dump = true;
 
@@ -383,6 +391,7 @@ if (dump) {
     run = () => {
         link0();
         link1();
+        init_snippets();
         link2();
         var heap = new ArrayBuffer(1024 * 1024);
         HEAPU8 = new Uint8Array(heap);
@@ -552,25 +561,6 @@ function foreign_read_file(addr, u1, fileid)
         console.log("    var foreign_open_file = foreign.open_file;");
         console.log("    var foreign_read_file = foreign.read_file;");
         console.log("    var foreign_exit = foreign.exit;");
-
-        /*
-        console.log(POP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
-        console.log(PUSH.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
-        console.log(RPOP.toString().replace(/RP_word.link.addr/g, RP_word.link.addr));
-        console.log(RPUSH.toString().replace(/RP_word.link.addr/g, RP_word.link.addr));
-        console.log(TOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
-        console.log(SETTOP.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
-        console.log(TOP2.toString().replace(/SP_word.link.addr/g, SP_word.link.addr));
-        */
-        //while (gIDMap.size & (gIDMap.size-1))
-        //    get_id(function (IP, word) { IP = IP|0; word = word|0; return IP|0; });
-        for (let [code, index] of gIDMap) {
-            code = code.toString().replace(/^function [a-zA-Z0-9_]*/, "function f_" + index);
-            code = code.replace("function f_" + index + "(IP, word)\n{", "case " + index + ":\n");
-            //code = code.replace(/TOP \(\)/g, "HEAPU32[" + (SP_word.link.addr + 28) + ">>2]");
-            code = code.replace(/}$/, "break;");
-            snippets[index] = code;
-        }
 
         console.log(snippets.asmmain0);
         for (let i = 0; i + "" in snippets; i++)
