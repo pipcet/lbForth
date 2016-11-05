@@ -87,7 +87,7 @@ function foreign_read_file(addr, u1, fileid)
                    str = window.prompt("lbForth:");
                }
            } while (str === "");
-           if (str) str = str + "\\n"
+           if (str) str = str + "\n"
        }
        if (!str) {
            foreign_exit(0);
