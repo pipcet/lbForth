@@ -7,10 +7,13 @@ LDFLAGS = $(M32)
 META-OUTPUT = kernel.c
 RUN = $(TDIR)/run.sh
 
-JS = /home/pip/jsshell-nightly-20161030/js
+JS = js
 
 METACOMPILE ?= echo 'include $(META)  bye' | $(RUN) ./forth | tail -n+3 > $@ ; \
 	$(GREP) Meta-OK $@
+
+html: forth.js
+	cp forth.js targets/asmjs/html
 
 $(TFORTH): forth.js
 	(echo "#!/bin/sh"; echo "$(JS) ./forth.js") > $@
@@ -20,7 +23,7 @@ $(TFORTH): forth.js
 forth.js: forth2asmjs.js
 	$(JS) $< > $@
 
-forth2asmjs.js: $(TDIR)/js2asmjs.js kernel.js
+forth2asmjs.js: $(TDIR)/common.js $(TDIR)/js2asmjs.js kernel.js
 	cat $^ > $@
 
 kernel.js: b-forth $(DEPS) $(PARAMS) $(META)

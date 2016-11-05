@@ -1,3 +1,13 @@
+This is an experimental JavaScript/asm.js port of Lars Brinkhoff's
+lbForth (http://github.com/larsbrinkhoff/lbForth). To use it (it
+currently shows the fmacs splash screen), first make sure you have
+SpiderMonkey installed as `js` in your path, then run
+
+  $ make TARGET=asmjs html
+
+and point your browser to the targets/asmjs/html subdirectory of the
+repository.
+
 ( Subset of Forth94 )
 
 This is a self-hosted implementation of Forth, which can regenerate

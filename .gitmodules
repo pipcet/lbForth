@@ -1,3 +1,7 @@
 [submodule "lisp"]
 	path = lisp
 	url = http://github.com/larsbrinkhoff/forth-metacompiler
+[submodule "fmacs"]
+	path = fmacs
+	url = http://github.com/pipcet/fmacs
+	branch = asmjs

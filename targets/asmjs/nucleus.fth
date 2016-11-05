@@ -350,6 +350,7 @@ code read-file ( addr u1 fileid -- u2 ior )
     SP = SP+4|0;
     addr = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
+    SP = SP-12|0;
 
     x = HEAPU32[c+8>>2]|0;
     y = HEAPU32[c+4>>2]|0;
@@ -357,8 +358,13 @@ code read-file ( addr u1 fileid -- u2 ior )
     if ((x|0) == (y|0)) {
        if ((HEAPU32[c+12>>2]|0) == 0)
            i = 0;
-       else
+       else {
+           HEAPU32[imul(1024,1022) + 512>>2] = word|0;
+           HEAPU32[imul(1024,1022) + 516>>2] = IP|0;
+           HEAPU32[imul(1024,1022) + 520>>2] = SP|0;
+           HEAPU32[imul(1024,1022) + 524>>2] = RP|0;
            i = foreign_read_file(addr|0, z|0, c|0)|0;
+       }
     } else {
        if ((z>>>0) > ((x-y)>>>0))
            z = (x-y)|0;
@@ -368,6 +374,7 @@ code read-file ( addr u1 fileid -- u2 ior )
        HEAPU32[c+4>>2] = (y + i)|0;
     }
 
+    SP = SP+12|0;
     SP = SP-4|0;
     HEAPU32[SP>>2] = i|0;
     SP = SP-4|0;
