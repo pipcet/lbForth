@@ -185,13 +185,10 @@ function VT100FD(process, domparent, fdno = undefined, outfdno = undefined)
                 e.preventDefault();
                 e.stopPropagation();
                 window.setTimeout(function () {
-                    console.log("input string " + inputstr);
                     try {
                         main(HEAPU32[1024*1022 + 512+0>>2]|0, HEAPU32[1024*1022 + 512+4>>2]|0, HEAPU32[1024*1022 + 512+8>>2]|0, HEAPU32[1024*1022 + 512+12>>2]|0);
                     } catch (e) {
-                        console.log("exception: " + e);
                     }
-                    console.log("input string (2) " + inputstr);
                 }, 0);
             }
         });
