@@ -145,6 +145,81 @@ function link2()
     }
 }
 
+function loop25 ()
+{
+    var done = false;
+    while (!done) {
+        done = true;
+
+        word:
+        for (let w of words) {
+                if (w.prelink.code !== dodoes_code)
+                continue;
+
+            if (w.prelink.mname === "dodoes")
+                continue;
+
+            for (let i = 0; i < w.prelink.param.length; i++) {
+                let p = w.prelink.param[i];
+                if (typeof p !== "object")
+                    continue word;
+                let [w2, n] = p;
+                if (w2 === "_literal__word") {
+                    if (typeof w.prelink.param[i+1] === "number") {
+                        i++;
+                        continue;
+                    } else {
+                        continue word;
+                    }
+                } else if (w2 === "_sliteral__word") {
+                    let len = w.prelink.param[i+1];
+                    let wlen = Math.floor(len + 3 / 4);
+                    i += wlen + 1;
+                    continue;
+                }
+
+                w2 = words_by_name.get(w2);
+                if (n != 0)
+                    continue word;
+                if (w2.prelink.code === dodoes_code)
+                    continue word;
+            }
+
+            done = false;
+
+            let code = "RP=RP-4|0; HEAPU32[RP>>2] = IP;"
+            for (let i = 0; i < w.prelink.param.length; i++) {
+                let p = w.prelink.param[i];
+                let [w2, n] = p;
+                if (w2 === "_literal__word") {
+                    code += "SP=SP-4|0; HEAPU32[SP>>2] = " + w.prelink.param[i+1] + ";\n";
+                    i++;
+                    continue;
+                } else if (w2 === "_sliteral__word") {
+                    let len = w.prelink.param[i+1];
+                    let wlen = Math.floor(len + 3 / 4);
+                    code += "SP=SP-8|0; HEAPU32[SP+4>>2] = " + (w.link.addr + 28 + (i + 2) * 4) + "; HEAPU32[SP>>2] = " + w.prelink.param[i+1] + ";\n";
+                    i += wlen + 1;
+                    continue;
+                }
+                w2 = words_by_name.get(w2);
+
+                if (i > 0 && w2.prelink.code.toString().match(/top/))
+                    code += "top = HEAPU32[SP>>2]|0;"
+                    code += "top = HEAPU32[SP>>2]|0;"
+                let index = get_id(w2.prelink.code);
+                code += peel_snippet(snippets[get_id(w2.prelink.code)]);
+            }
+
+            let index = gIDMap.size;
+            code = "case " + index + ": /*" + w.prelink.mname + "*/\n" + code + "\nbreak;\n";
+            index = get_id(code);
+            w.prelink.code = code;
+            snippets[index] = code;
+        }
+    }
+}
+
 function resolve3(name)
 {
     if (typeof name === "number")
@@ -226,12 +301,29 @@ snippets.asmmain1 = `
     }
 `;
 
+function peel_snippet (code)
+{
+    let index = 666;
+    code = code.toString().replace(/^function [a-zA-Z0-9_]*/, "function f_" + index);
+    code = code.replace(/function f_[0-9]* \(IP, word\)\n{/, "")
+    code = code.replace(/case [0-9]*:/, "");
+    code = code.replace(/break;/, "");
+    code = code.replace("cont()", "continue l");
+    return code;
+}
+
+function cook_snippet (code, index)
+{
+    code = code.toString().replace(/^function [a-zA-Z0-9_]*/, "function f_" + index);
+    code = code.replace("function f_" + index + "(IP, word)\n{", "case " + index + ":\n");
+    code = code.replace(/}$/, "break;");
+    code = code.replace("cont()", "continue l");
+    return code;
+}
+
 function init_snippets() {
     for (let [code, index] of gIDMap) {
-        code = code.toString().replace(/^function [a-zA-Z0-9_]*/, "function f_" + index);
-        code = code.replace("function f_" + index + "(IP, word)\n{", "case " + index + ":\n");
-        code = code.replace(/}$/, "break;");
-        code = code.replace("cont()", "continue l");
+        code = cook_snippet(code, index);
         snippets[index] = code;
     }
 }
@@ -241,6 +333,8 @@ run = () => {
     link1();
     init_snippets();
     link2();
+
+    //loop25();
     var heap = new ArrayBuffer(1024 * 1024);
     HEAPU8 = new Uint8Array(heap);
     HEAPU32 = new Uint32Array(heap);
