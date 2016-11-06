@@ -204,9 +204,6 @@ function loop25 ()
                 }
                 w2 = words_by_name.get(w2);
 
-                if (i > 0 && w2.prelink.code.toString().match(/top/))
-                    code += "top = HEAPU32[SP>>2]|0;"
-                    code += "top = HEAPU32[SP>>2]|0;"
                 let index = get_id(w2.prelink.code);
                 code += peel_snippet(snippets[get_id(w2.prelink.code)]);
             }
@@ -289,7 +286,6 @@ function lbForth(stdlib, foreign, buffer)
         var top = 0;
 
         l: while (1|0) {
-            top = HEAPU32[SP>>2]|0;
             switch (HEAPU32[word+24>>2]|0) {
 `;
 
@@ -334,7 +330,7 @@ run = () => {
     init_snippets();
     link2();
 
-    //loop25();
+    loop25();
     var heap = new ArrayBuffer(1024 * 1024);
     HEAPU8 = new Uint8Array(heap);
     HEAPU32 = new Uint32Array(heap);
@@ -369,7 +365,7 @@ if (typeof window === "undefined")
 window.onload = () => {
     if (typeof VT100FD !== "undefined")
         vt100 = new VT100FD(undefined, document.body);
-    inputstr = "include fmacs.fth\\nfmacs\\n";
+    inputstr = ""; "include fmacs.fth\\nfmacs\\n";
     try {
         main = lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array, Math: Math }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain;
         main(HEAPU32[0 >> 2]|0, 0, 64*1024 + 4096, 64*1024 + 8192)

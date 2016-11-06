@@ -34,6 +34,7 @@ code sp@
 end-code
 
 code sp!
+    top = HEAPU32[SP>>2]|0;
     SP = top;
 end-code
 
@@ -43,6 +44,7 @@ code rp@
 end-code
 
 code rp!
+    top = HEAPU32[SP>>2]|0;
     RP = top;
     SP = SP+4|0;
 end-code
@@ -60,6 +62,7 @@ end-code
 \ : 0branch   r> dup cell+ swap @ rot select >r ;
 
 code 0branch ( x -- )
+    top = HEAPU32[SP>>2]|0;
     addr = HEAPU32[IP>>2]|0;
     SP = SP+4|0;
     if ((top|0) == 0)
@@ -84,6 +87,7 @@ code (literal) ( -- n )
 end-code
 
 code ! ( x addr -- )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     x = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
@@ -91,21 +95,25 @@ code ! ( x addr -- )
 end-code
 
 code @ ( addr -- x )
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = HEAPU32[top>>2]|0;
 end-code
 
 \ : +   begin ?dup while 2dup xor -rot and 2* repeat ;
 
 code + ( x y -- x+y )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     HEAPU32[SP>>2] = (HEAPU32[SP>>2]|0)+top;
 end-code
 
 code negate
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = -top|0;
 end-code
 
 code - ( x y -- x+y )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     HEAPU32[SP>>2] = ((HEAPU32[SP>>2]|0)|0)-top|0;
 end-code
@@ -114,6 +122,7 @@ end-code
 \ : >r   r@ rp@ -4 + rp! rp@ ! rp@ 4 + ! ;
 
 code >r  ( x -- ) ( R: -- x )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     RP = RP - 4|0;
     HEAPU32[RP>>2] = top|0;
@@ -141,6 +150,7 @@ code 2r>
 end-code
 
 code 2>r
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     y = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
@@ -151,6 +161,7 @@ code 2>r
 end-code
 
 code c! ( c addr -- )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     c = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
@@ -158,10 +169,12 @@ code c! ( c addr -- )
 end-code
 
 code c@ ( addr -- c )
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = HEAPU8[top|0]|0;
 end-code
 
 code emit ( c -- )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     foreign_putchar (top|0)|0;
 end-code
@@ -169,11 +182,13 @@ end-code
 \ optional words
 
 code dup
+    top = HEAPU32[SP>>2]|0;
     SP = SP-4|0;
     HEAPU32[SP>>2] = top|0;
 end-code
 
 code 0=
+    top = HEAPU32[SP>>2]|0;
     if ((top|0) == 0)
         c = -1;
     else
@@ -182,6 +197,7 @@ code 0=
 end-code
 
 code 0<>
+    top = HEAPU32[SP>>2]|0;
     if ((top|0) == 0)
         c = 0;
     else
@@ -190,6 +206,7 @@ code 0<>
 end-code
 
 code 0<
+    top = HEAPU32[SP>>2]|0;
     if (0 <= (top|0))
         c = 0;
     else
@@ -198,6 +215,7 @@ code 0<
 end-code
 
 code <
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     if ((top>>0) > (HEAPU32[SP>>2]>>0))
         c = -1;
@@ -207,18 +225,21 @@ code <
 end-code
 
 code rot
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = HEAPU32[SP+8>>2]|0;
     HEAPU32[SP+8>>2] = HEAPU32[SP+4>>2]|0;
     HEAPU32[SP+4>>2] = top;
 end-code
 
 code -rot
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = HEAPU32[SP+4>>2]|0;
     HEAPU32[SP+4>>2] = HEAPU32[SP+8>>2]|0;
     HEAPU32[SP+8>>2] = top;
 end-code
 
 code nip
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     HEAPU32[SP>>2] = top;
 end-code
@@ -232,12 +253,14 @@ code 2drop
 end-code
 
 code 2dup
+    top = HEAPU32[SP>>2]|0;
     SP=SP-8|0;
     HEAPU32[SP+4>>2] = HEAPU32[SP+12>>2]|0;
     HEAPU32[SP>>2] = top;
 end-code
 
 code ?dup
+    top = HEAPU32[SP>>2]|0;
     if (top|0) {
         SP = SP-4|0;
         HEAPU32[SP>>2] = top|0;
@@ -245,6 +268,7 @@ code ?dup
 end-code
 
 code swap
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = HEAPU32[SP+4>>2]|0;
     HEAPU32[SP+4>>2] = top;
 end-code
@@ -255,63 +279,76 @@ code over
 end-code
 
 code invert
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = ~top;
 end-code
 
 code xor ( x y -- x^y )
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = HEAPU32[SP>>2]^top;
 end-code
 
 code or
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = HEAPU32[SP>>2]|top;
 end-code
 
 code and ( x y -- x&y )
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = HEAPU32[SP>>2]&top;
 end-code
 
 code nand ( x y -- ~(x&y) )
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = ~(HEAPU32[SP>>2]&top);
 end-code
 
 code =
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = (HEAPU32[SP>>2]|0) == (top>>0) ? -1 : 0;
 end-code
 
 code <>
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = (HEAPU32[SP>>2]|0) != (top>>0) ? -1 : 0;
 end-code
 
 code 1+
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = top + 1|0;
 end-code
 
 code cell+
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = top + 4|0;
 end-code
 
 code +!
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[top>>2] = (HEAPU32[top>>2]|0)+(HEAPU32[SP>>2]|0)|0;
     SP=SP+4|0;
 end-code
 
 code 2*
+    top = HEAPU32[SP>>2]|0;
     HEAPU32[SP>>2] = (top|0) + (top|0)|0;
 end-code
 
 code *
+    top = HEAPU32[SP>>2]|0;
     SP=SP+4|0;
     HEAPU32[SP>>2] = imul(top|0, HEAPU32[SP>>2]|0)|0;
 end-code
 
 code tuck
+    top = HEAPU32[SP>>2]|0;
     SP=SP-4|0;
     HEAPU32[SP+4>>2] = HEAPU32[SP+8>>2]|0;
     HEAPU32[SP+8>>2] = top|0;
@@ -327,6 +364,7 @@ code close-file ( fileid -- ior )
 end-code
 
 code open-file ( addr u mode -- fileid ior )
+    top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     y = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
