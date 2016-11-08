@@ -24,6 +24,7 @@ parse-name : header, docol, ]   parse-name header, docol, ] !csp exit [ reveal
 : compile-only   [ ' compiler-words ] literal relink  immediate ;
 
 : dodoes_code   [ ' dodoes >code @ ] literal ;
+
 : does>     [ ' (does>) ] literal compile,  dodoes_code does, ; compile-only
 : "create   header, dovar, reveal ;
 : create    parse-name "create ;
@@ -97,8 +98,7 @@ create squote   128 allot
 
 : under   postpone >r ' compile, postpone r> ; immediate
 
-: bits/cell   0 1 begin ?dup while 2* under 1+ repeat
-   postpone literal ; immediate
+: bits/cell   32 ;
 
 : rshift   >r 0 begin r> dup bits/cell < while 1+ >r
            2* over 0< if 1+ then under 2* repeat drop nip ;
@@ -112,7 +112,7 @@ create squote   128 allot
 : u/mod ( n d -- r q )
     ?dup 0= abort" Division by zero"
     0 >r 2>r		\ R: q n
-    0 1 begin ?dup while dup 2* repeat
+    0 1 begin ?dup while dup 2* -1 and repeat
     r> 0 begin		\ S: [...1<<i...] d r
       2*		\ r <<= 1
       r@ 0< if 1+ then	\ if n&msb then r++
@@ -306,4 +306,4 @@ rp\ : rp!   postpone (literal) RP , postpone ! ; immediate
 
 : (number) ( a u -- )   0 0 2swap >number  ?dup ?undef 2drop  ?literal ;
 
-' (number) ' number >body !
+\ ' (number) ' number >body !

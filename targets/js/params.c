@@ -45,7 +45,7 @@ int main (int argc, const char **argv)
   check (sizeof (code_t *));
   check (sizeof (xt_t));
 
-  output ("cell-size", sizeof (cell));
+  output ("cell-size", 1);
   output ("name-size", NAME_LENGTH);
   output ("next-offset", offsetof (struct word, next));
   output ("code-offset", offsetof (struct word, code));

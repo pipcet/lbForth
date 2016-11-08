@@ -6,12 +6,12 @@ vocabulary compiler
 
 vocabulary t-words
 defer t,
-: t-word ( a u xt -- ) -rot "create , does> @ t, ;
+: t-word ( a u xt -- ) -rot 2dup ." /*" type "create dup . ." */" cr , does> @ t, ;
 : fatal   cr source type cr bye ;
-: ?undef   0= if ." Undefined!" fatal then ;
+: ?undef   0= if ." Undefined! " type fatal then ;
 : t-search   ['] t-words search-wordlist ;
 : defined?   t-search if drop -1 else 0 then ;
-: "' ( u a -- xt ) t-search ?undef >body @ ;
+: "' ( u a -- xt ) 2dup t-search ?undef >body @ -rot 2drop ;
 : t'   parse-name "' ;
 : t-compile   parse-name postpone sliteral postpone "' postpone t, ; immediate
 : t-[compile]   also compiler ' previous compile, ; immediate
@@ -54,24 +54,46 @@ include params.fth
 
 include target.fth
 
-: header, ( a u -- ) 2dup align here over >xt + t-word header, ;
-: ?code, ( -- ) here cell+ , ;
+variable #code
+1 #code !
+
+: new-code #code @ #code dup @ 1+ swap ! ;
+: header, ( a u -- ) 2dup align here over >xt drop t-word header, ;
+: ?code, ( -- ) new-code , ;
 
 : host   only forth definitions host-image ;
 
+: target   only forth also meta also t-words definitions previous target-image ;
 include asm.fth
 include lib/xforward.fth
 
 only forth definitions also meta
+variable 'perform
 : target   only forth also meta also t-words definitions previous target-image ;
 
 target
-load-address org
-exe-header
+
+1024 allot
 
 include nucleus.fth
 
+s" docol" header, 0 , 0 , t' >r , t' exit ,
+s" dovar" header, 0 , 0 , t' exit ,
+s" docon" header, 0 , 0 , t' @ , t' exit ,
+s" dodef" header, 0 , 0 , here >host 'perform ! 777 , t' exit ,
+
 host also meta definitions
+
+create-rsnippets
+." var word = 0;" cr
+." var IP = 0;" cr
+." var SP = 96 * 1024;" cr
+." var RP = 128 * 1024;" cr
+." var HEAP = [];" cr
+." for (let i = 0; i < 1024 * 1024; i++) HEAP[i] = 0;" cr
+." var code = [];" cr
+
+dump-snippets
 
 : >mark   here 0 , ;
 : <mark   here ;
@@ -83,11 +105,13 @@ host also meta definitions
 : number, ( a u -- ) 0 0 2over >number nip ?number, ;
 : t-number   ['] number, is number ;
 
-t' docol >body to 'docol
-t' dovar >body to 'dovar
-t' docon >body to 'docon
-t' dodef >body to 'dodef
-t' dodoes >body to 'dodoes
+: >t-body 19 + ;
+
+t' docol >t-body to 'docol
+t' dovar >t-body to 'dovar
+t' docon >t-body to 'docon
+t' dodef >t-body to 'dodef
+7 to 'dodoes
 
 : h: : ;
 
@@ -100,8 +124,8 @@ h: defer   parse-name header, dodef, t-compile abort ;
 h: constant   parse-name header, docon, , ;
 h: value   constant ;
 h: immediate   latest >nfa dup c@ negate swap c! ;
-h: to   ' >body ! ;
-h: is   ' >body ! ;
+h: to   ' >t-body ! ;
+h: is   ' >t-body ! ;
 h: [defined]   parse-name defined? ;
 h: [undefined]   [defined] 0= ;
 
@@ -126,15 +150,16 @@ h: [compile]   ' , ;
 h: does>   t-compile (does>) ;
 
 cell-size t-constant cell
-next-offset t-constant TO_NEXT   
-code-offset t-constant TO_CODE   
-body-offset t-constant TO_BODY   
+next-offset t-constant TO_NEXT
+18 t-constant TO_CODE
+19 t-constant TO_BODY
+17 t-constant TO_DOES
 
-'docol t-constant 'docol   
-'dovar t-constant 'dovar   
-'docon t-constant 'docon   
-'dodef t-constant 'dodef   
-'dodoes t-constant 'dodoes   
+'docol t-constant 'docol
+'dovar t-constant 'dovar
+'docon t-constant 'docon
+'dodef t-constant 'dodef
+'dodoes t-constant 'dodoes
 
 h: s"   t-compile (sliteral) parse" dup , ", ;
 h: ."   t-[compile] s" t-compile type ;
@@ -151,7 +176,7 @@ h: else   t-[compile] ahead swap t-[compile] then ;
 h: while    t-[compile] if swap ;
 h: repeat   t-[compile] again t-[compile]  then ;
 
-h: to   ' >body t-literal t-compile ! ;
+h: to   ' >t-body t-literal t-compile ! ;
 h: is   t-[compile] to ;
 
 h: do   0leaves  t-compile 2>r  t-[compile] begin ;
@@ -167,20 +192,21 @@ target
 include kernel.fth
 include cold.fth
 
+: mystring s" my very long string" ;
+
+target
+
+t' perform 'perform @ !
+
 only forth also meta also t-words resolve-all-forward-refs
 
 only forth also meta
-exe-end
 
-save-target bye
+host also meta also forth definitions
 
-host also meta
+." var turnkey = " t' turnkey . ." ;" cr
+." var i = 0;" cr
 
-cr .( Target size: ) t-size .
-cr .( Target used: ) target here host also meta >host t-image host - .
-cr .( Host unused: ) unused .
-cr .( Target words: ) also t-words words only forth
-cr .( Forward refs: ) also meta also forward-refs words
-cr
+0 target here host also meta also target-image dump-target-region host only forth swap 2dup js-dump ." /*" cr dump ." */" cr
 
-target-region hex dump bye
+." /* Meta-OK */" cr

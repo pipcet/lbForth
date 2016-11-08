@@ -3,13 +3,13 @@
 code cold \ int main (void)
   extern struct word dp0_word, sp0_word, rp0_word, SP_word, RP_word,
     limit_word, latest0_word, turnkey_word;
-  static cell data_stack[110];
-  static cell return_stack[256];
-  static cell dictionary[18000];
+  static cell data_stack[1100];
+  static cell return_stack[2560];
+  static cell dictionary[180000];
   xt_t *IP = 0, xt = &turnkey_word;
 
-  sp0_word.param[0] = (cell)(&data_stack[100]);
-  rp0_word.param[0] = (cell)(&return_stack[256]);
+  sp0_word.param[0] = (cell)(&data_stack[1000]);
+  rp0_word.param[0] = (cell)(&return_stack[2560]);
   dp0_word.param[0] = (cell)dictionary;
   limit_word.param[0] = (cell)dictionary + sizeof dictionary;
   latest0_word.param[0] = (cell)(&turnkey_word);

@@ -1,15 +1,13 @@
 function clog(addr)
 {
-    console.log(CStringAt(HEAPU8, addr));
+    console.log(CStringAt(HEAP, addr));
 }
-heap = new ArrayBuffer(1024 * 1024);
-HEAPU8 = new Uint8Array(heap);
-HEAPU32 = new Uint32Array(heap);
 
 var next_load_address = 512 * 1024;
 var load_size = {};
 var fhs = {};
 var gFileId = 1;
+var HEAP;
 
 function load_file(heapu8, path)
 {
@@ -19,9 +17,9 @@ function load_file(heapu8, path)
         next_load_address &= -32;
         load_size[path] = CStringTo(str, heapu8, next_load_address + 32);
         load_address[path] = next_load_address;;
-        HEAPU32[next_load_address+4>>2] = 0; // position
-        HEAPU32[next_load_address+8>>2] = load_size[path]-1; // size
-        HEAPU32[next_load_address+12>>2] = 0; // call slow_read flag
+        HEAP[next_load_address+1] = 0; // position
+        HEAP[next_load_address+2] = load_size[path]-1; // size
+        HEAP[next_load_address+3] = 0; // call slow_read flag
         next_load_address += 32 + load_size[path];
     } catch (e) {
         console.log("file not found: " + path)
@@ -46,13 +44,16 @@ function foreign_exit(c)
 
 function foreign_open_file(addr, u, mode)
 {
-    var path = StringAt(HEAPU8, addr, u);
-    var mode = CStringAt(HEAPU8, mode);
+    var path = StringAt(HEAP, addr, u);
+    var mode = CStringAt(HEAP, mode);
+    mode = mode.substr(0, 1);
+
+    console.log("open_file " + addr + " " + path + " " + mode + " " + u);
 
     var fileid = 0;
 
     if (!(path in load_address))
-       load_file(HEAPU8, path);
+       load_file(HEAP, path);
 
     if (path in load_address) {
        fileid = load_address[path];
@@ -70,10 +71,10 @@ function foreign_read_file(addr, u1, fileid)
 {
     var i;
 
-    if (fileid === 0 && (!fhs[fileid] || HEAPU8[fhs[fileid].offset + 32] === 0)) {
+    if (fileid === 0 && (!fhs[fileid] || HEAP[fhs[fileid].offset + 32] === 0)) {
        fhs[0] = { offset: 1023 * 1024 };
        for (let i = 0; i < 1024; i++)
-           HEAPU8[1023 * 1024 + i] = 0;
+           HEAP[1023 * 1024 + i] = 0;
        let str;
        if (inputstr.length > 0) {
            str = inputstr.substr(0, 1);
@@ -93,13 +94,13 @@ function foreign_read_file(addr, u1, fileid)
            foreign_exit(0);
            throw 0;
        }
-       let len = CStringTo(str, HEAPU8, fhs[0].offset + 32);
-       HEAPU8[1024 * 1023 + 32 + len - 1] = 0;
+       let len = CStringTo(str, HEAP, fhs[0].offset + 32);
+       HEAP[1024 * 1023 + 32 + len - 1] = 0;
     }
     var off = fhs[fileid].offset;
 
     for (i = 0; i < u1; i++)
-        if ((HEAPU8[addr++] = HEAPU8[fileid + off + 32 + i]) == 0)
+        if ((HEAP[addr++] = HEAP[fileid + off + 32 + i]) == 0)
            break;
 
     fhs[fileid].offset += i;

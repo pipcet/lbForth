@@ -1,6 +1,6 @@
 "use strict";
 
-eval(os.file.readFile("targets/asmjs/common.js"));
+eval(os.file.readFile("targets/js/common.js"));
 
 var snippets = {};
 
@@ -11,43 +11,43 @@ var load_size = {};
 var fhs = {};
 var gFileId = 1;
 
-function load_file(heapu8, path, realpath)
+function load_file(heap, path, realpath)
 {
     if (!realpath)
         realpath = path;
     var str = os.file.readFile(realpath, "utf-8");
     next_load_address += 31;
     next_load_address &= -32;
-    load_size[path] = CStringTo(str, heapu8, next_load_address + 32);
+    load_size[path] = CStringTo(str, heap, next_load_address + 32);
     load_address[path] = next_load_address;;
-    HEAPU32[next_load_address+4>>2] = 0; // position
-    HEAPU32[next_load_address+8>>2] = load_size[path]-1; // size
-    HEAPU32[next_load_address+12>>2] = 0; // call slow_read flag
+    HEAP[next_load_address+1] = 0; // position
+    HEAP[next_load_address+2] = load_size[path]-1; // size
+    HEAP[next_load_address+3] = 0; // call slow_read flag
     next_load_address += 32 + load_size[path];
 }
 
-function load_files(heapu8)
+function load_files(heap)
 {
-    load_file(heapu8, "src/load.fth");
-    load_file(heapu8, "src/core.fth");
-    load_file(heapu8, "src/core-ext.fth");
-    load_file(heapu8, "src/string.fth");
-    load_file(heapu8, "src/tools.fth");
-    load_file(heapu8, "src/file.fth");
-    load_file(heapu8, "src/search.fth");
-    load_file(heapu8, "fmacs.fth", "fmacs/src/fmacs.fth");
+    load_file(heap, "src/load.fth");
+    load_file(heap, "src/core.fth");
+    load_file(heap, "src/core-ext.fth");
+    load_file(heap, "src/string.fth");
+    load_file(heap, "src/tools.fth");
+    load_file(heap, "src/file.fth");
+    load_file(heap, "src/search.fth");
+    load_file(heap, "fmacs.fth", "fmacs/src/fmacs.fth");
 
-    load_file(heapu8, "tty.fth", "fmacs/src/tty.fth");
-    load_file(heapu8, "vt100.fth", "fmacs/src/vt100.fth");
-    load_file(heapu8, "point.fth", "fmacs/src/point.fth");
-    load_file(heapu8, "format.fth", "fmacs/src/format.fth");
-    load_file(heapu8, "window.fth", "fmacs/src/window.fth");
-    load_file(heapu8, "display.fth", "fmacs/src/display.fth");
-    load_file(heapu8, "text.fth", "fmacs/src/text.fth");
-    load_file(heapu8, "kill.fth", "fmacs/src/kill.fth");
-    load_file(heapu8, "keymap.fth", "fmacs/src/keymap.fth");
-    load_file(heapu8, "minibuffer.fth", "fmacs/src/minibuffer.fth");
-    load_file(heapu8, "bindings.fth", "fmacs/src/bindings.fth");
+    load_file(heap, "tty.fth", "fmacs/src/tty.fth");
+    load_file(heap, "vt100.fth", "fmacs/src/vt100.fth");
+    load_file(heap, "point.fth", "fmacs/src/point.fth");
+    load_file(heap, "format.fth", "fmacs/src/format.fth");
+    load_file(heap, "window.fth", "fmacs/src/window.fth");
+    load_file(heap, "display.fth", "fmacs/src/display.fth");
+    load_file(heap, "text.fth", "fmacs/src/text.fth");
+    load_file(heap, "kill.fth", "fmacs/src/kill.fth");
+    load_file(heap, "keymap.fth", "fmacs/src/keymap.fth");
+    load_file(heap, "minibuffer.fth", "fmacs/src/minibuffer.fth");
+    load_file(heap, "bindings.fth", "fmacs/src/bindings.fth");
 }
 
 /* console I/O */
@@ -84,7 +84,7 @@ function Word()
 
 Word.prototype.calc_space = function ()
 {
-    return 28 + 4 * this.prelink.param.length;
+    return 32 + this.prelink.param.length;
 };
 
 function link0()
@@ -134,7 +134,7 @@ function resolve2(pair)
         return code_to_addr.get(pair);
     }
 
-    return words_by_name.get(pair[0]).link.addr + pair[1]*4;
+    return words_by_name.get(pair[0]).link.addr + pair[1];
 }
 
 function link2()
@@ -187,18 +187,18 @@ function loop25 ()
 
             done = false;
 
-            let code = "RP=RP-4|0; HEAPU32[RP>>2] = IP;"
+            let code = "RP=RP-4|0; HEAP[RP] = IP;"
             for (let i = 0; i < w.prelink.param.length; i++) {
                 let p = w.prelink.param[i];
                 let [w2, n] = p;
                 if (w2 === "_literal__word") {
-                    code += "SP=SP-4|0; HEAPU32[SP>>2] = " + w.prelink.param[i+1] + ";\n";
+                    code += "SP=SP-4|0; HEAP[SP] = " + w.prelink.param[i+1] + ";\n";
                     i++;
                     continue;
                 } else if (w2 === "_sliteral__word") {
                     let len = w.prelink.param[i+1];
                     let wlen = Math.floor(len + 3 / 4);
-                    code += "SP=SP-8|0; HEAPU32[SP+4>>2] = " + (w.link.addr + 28 + (i + 2) * 4) + "; HEAPU32[SP>>2] = " + w.prelink.param[i+1] + ";\n";
+                    code += "SP=SP-8|0; HEAP[SP+4>>2] = " + (w.link.addr + 28 + (i + 2) * 4) + "; HEAP[SP>>2] = " + w.prelink.param[i+1] + ";\n";
                     i += wlen + 1;
                     continue;
                 }
@@ -232,11 +232,11 @@ function save3(heapu8, heapu32)
         heapu8[a] = w.prelink.nlen;
         for (let i = 0; i < 15; i++)
             heapu8[a + i + 1] = w.prelink.name.charCodeAt(i);
-        heapu32[a + 16 >> 2] = resolve3(w.prelink.next);
-        heapu32[a + 20 >> 2] = w.link.does;
-        heapu32[a + 24 >> 2] = get_id(w.prelink.code);
+        heapu32[a + 16] = resolve3(w.prelink.next);
+        heapu32[a + 17] = w.link.does;
+        heapu32[a + 18] = get_id(w.prelink.code);
         for (let i = 0; i < w.link.param.length; i++) {
-            heapu32[a + 28 + 4 * i >> 2] = w.link.param[i];
+            heapu32[a + 19 + i] = w.link.param[i];
         }
     }
 }
@@ -245,24 +245,23 @@ var vt100;
 
 function init_vars()
 {
-    HEAPU32[sp0_word.link.addr + 28 >> 2] = 64*1024 + 4096;
-    HEAPU32[rp0_word.link.addr + 28 >> 2] = 64*1024 + 8192;
-    HEAPU32[dp0_word.link.addr + 28 >> 2] = 64*1024 + 16384;
-    HEAPU32[limit_word.link.addr + 28 >> 2] = 64*1024 + 256 * 1024;
-    HEAPU32[latest0_word.link.addr + 28 >> 2] = turnkey_word.link.addr;
-    HEAPU32[SP_word.link.addr + 28 >> 2] = 64*1024 + 4096;
-    HEAPU32[RP_word.link.addr + 28 >> 2] = 64*1024 + 8192;
+    HEAP[sp0_word.link.addr + 19] = 64*1024 + 4096;
+    HEAP[rp0_word.link.addr + 19] = 64*1024 + 8192;
+    HEAP[dp0_word.link.addr + 19] = 64*1024 + 16384;
+    HEAP[limit_word.link.addr + 19] = 64*1024 + 256 * 1024;
+    HEAP[latest0_word.link.addr + 19] = turnkey_word.link.addr;
+    HEAP[SP_word.link.addr + 19] = 64*1024 + 4096;
+    HEAP[RP_word.link.addr + 19] = 64*1024 + 8192;
 
-    HEAPU32[0 >> 2] = words_by_name.get("turnkey_word").link.addr;
-    HEAPU32[4 >> 2] = 0;
-    HEAPU32[8 >> 2] = 0;
-    HEAPU32[12 >> 2] = 1;
+    HEAP[0] = words_by_name.get("turnkey_word").link.addr;
+    HEAP[1] = 0;
+    HEAP[2] = 0;
+    HEAP[3] = 1;
 }
 
-snippets.asmmain0 = `
+snippets.main0 = `
 function lbForth(stdlib, foreign, buffer)
 {
-    "use asm";
     var HEAPU8 = new stdlib.Uint8Array(buffer);
     var HEAPU32 = new stdlib.Uint32Array(buffer);
     var imul = stdlib.Math.imul;
@@ -271,12 +270,8 @@ function lbForth(stdlib, foreign, buffer)
     var foreign_read_file = foreign.read_file;
     var foreign_exit = foreign.exit;
 
-    function asmmain(word, IP, SP, RP)
+    function main(word, IP, SP, RP)
     {
-        word = word|0;
-        IP = IP|0;
-        SP = SP|0;
-        RP = RP|0;
         var addr = 0;
         var x = 0;
         var y = 0;
@@ -286,13 +281,14 @@ function lbForth(stdlib, foreign, buffer)
         var top = 0;
 
         l: while (1|0) {
-            switch (HEAPU32[word+24>>2]|0) {
+            //console.log("word " + word + " IP " + IP);
+            switch (HEAP[word+18]|0) {
 `;
 
-snippets.asmmain1 = `
+snippets.main1 = `
             }
-            word = HEAPU32[IP>>2]|0;
-            IP = IP + 4|0;
+            word = HEAP[IP]|0;
+            IP = IP + 1|0;
         }
     }
 `;
@@ -330,33 +326,33 @@ run = () => {
     init_snippets();
     link2();
 
-    loop25();
+    //loop25();
     var heap = new ArrayBuffer(1024 * 1024);
-    HEAPU8 = new Uint8Array(heap);
-    HEAPU32 = new Uint32Array(heap);
-    save3(HEAPU8, HEAPU32);
+    HEAP = [];
+    save3(HEAP, HEAP);
     init_vars();
-    console.log(os.file.readFile("targets/asmjs/common.js"));
-    console.log(os.file.readFile("targets/asmjs/asmjs.js"));
-    load_files(HEAPU8);
+    console.log(os.file.readFile("targets/js/common.js"));
+    console.log(os.file.readFile("targets/js/asmjs.js"));
+    load_files(HEAP);
     console.log("load_address = {");
     for (let path in load_address) {
         console.log("    \"" + path + "\": " + load_address[path] + ",");
     }
     console.log("};");
 
-    console.log(snippets.asmmain0);
+    console.log(snippets.main0);
     for (let i = 0; i + "" in snippets; i++)
         console.log(snippets[i]);
-    console.log(snippets.asmmain1);
+    console.log(snippets.main1);
 
-    console.log("    return { asmmain: asmmain };");
+    console.log("    return { main: main };");
     console.log("}");
 
+    console.log("for (let i = 0; i < 1024 * 1024; i++) HEAP[i] = 0;");
 
-    for (let i = 0; i < 1024 * 1024; i+=4) {
-        if (HEAPU32[i>>2])
-            console.log("HEAPU32[" + i + ">>2] = 0x" + HEAPU32[i>>2].toString(16) + ";");
+    for (let i = 0; i < 1024 * 1024; i++) {
+        if (HEAP[i])
+            console.log("HEAP[" + i + "] = 0x" + HEAP[i].toString(16) + ";");
     }
 
     console.log(`
@@ -367,8 +363,8 @@ window.onload = () => {
         vt100 = new VT100FD(undefined, document.body);
     inputstr = ""; "include fmacs.fth\\nfmacs\\n";
     try {
-        main = lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array, Math: Math }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).asmmain;
-        main(HEAPU32[0 >> 2]|0, 0, 64*1024 + 4096, 64*1024 + 8192)
+        main = lbForth({ Uint8Array: Uint8Array, Uint32Array: Uint32Array, Math: Math }, { clog: clog, putchar: foreign_putchar, open_file: foreign_open_file, read_file: foreign_read_file, exit: foreign_exit }, heap).main;
+        main(HEAP[0], 0, 64*1024 + 4096, 64*1024 + 8192)
     } catch (e) {
         console.log(e);
     }

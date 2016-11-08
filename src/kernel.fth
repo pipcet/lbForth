@@ -111,7 +111,7 @@ include target.fth
 
 : lowercase? ( c -- flag )   dup [char] a < if drop 0 exit then [ char z 1+ ] literal < ;
 : upcase ( c1 -- c2 )   dup lowercase? if [ char A char a - ] literal + then ;
-: c<> ( c1 c2 -- flag )   upcase swap upcase <> ;
+: c<> ( c1 c2 -- flag )   swap <> ;
 
 : name= ( ca1 u1 ca2 u2 -- flag )
    2>r r@ <> 2r> rot if 3drop 0 exit then
@@ -246,12 +246,12 @@ defer backtrace
 : sigint   cr backtrace abort ;
 
 \ These will be set in COLD, or by the metacompiler.
-0 constant sp0
-0 constant rp0
-0 constant dp0
+96 1024 * constant sp0
+128 1024 * constant rp0
+128 1024 * constant dp0
 variable limit
 0 constant image0
-0 constant latest0
+6663 constant latest0
 
 defer parsed
 : (parsed) ( a u -- )   find-name interpret-xt ;

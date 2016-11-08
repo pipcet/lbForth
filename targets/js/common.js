@@ -2,11 +2,10 @@
  * JavaScript-to-asm.js translator. */
 "use strict";
 
-var docolcomma4_ip = ["docolcomma", 4 + 7];
+var docolcomma4_ip = ["docolcomma", 4 + 19];
 
 var heap;
-var HEAPU8;
-var HEAPU32;
+var HEAP;
 
 var inputstr = "";
 var main;

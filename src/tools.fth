@@ -16,6 +16,7 @@
 : dump-cells   dup 16 + swap do i @ #digits u.r space cell +loop ;
 : dump-line    dup u. space  dup dump-cells  space dump-chars cr ;
 : dump         bounds do i dump-line 16 +loop ;
+: js-dump bounds do ." HEAP[i++/*" dup . 1+ ." */] = " i @ . ." |0;" cr 4 +loop ;
 
 : c?      c@ 0 <# # #s #> type space ;
 : cdump   bounds do i c? loop cr ;
