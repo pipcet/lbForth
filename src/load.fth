@@ -8,3 +8,6 @@ parse-name core-ext.fth included
 parse-name string.fth included
 parse-name tools.fth included
 parse-name file.fth included
+[defined] js-to-string [if]
+parse-name js.fth included
+[then]

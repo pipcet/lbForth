@@ -11,7 +11,7 @@
 \ Control flow:		0branch
 \ Literals:		(literal)
 \ Memory access:	! @ c! c@
-\ Aritmetic/logic:	+ nand
+\ Arithmetic/logic:	+ nand
 \ Return stack:		>r r>
 \ I/O:			emit open-file read-file close-file
 
@@ -246,12 +246,12 @@ defer backtrace
 : sigint   cr backtrace abort ;
 
 \ These will be set in COLD, or by the metacompiler.
-96 1024 * constant sp0
-128 1024 * constant rp0
-128 1024 * constant dp0
+0 constant sp0
+0 constant rp0
+0 constant dp0
 variable limit
 0 constant image0
-6663 constant latest0
+0 constant latest0
 
 defer parsed
 : (parsed) ( a u -- )   find-name interpret-xt ;

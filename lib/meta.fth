@@ -85,6 +85,7 @@ s" dodef" header, 0 , 0 , here >host 'perform ! 777 , t' exit ,
 host also meta definitions
 
 create-rsnippets
+." var global = this;" cr
 ." var word = 0;" cr
 ." var IP = 0;" cr
 ." var SP = 96 * 1024;" cr

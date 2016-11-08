@@ -17,9 +17,6 @@ create code-line 128 allot
 
 \ previous definitions  also assembler
 
-: .code1   ." function " latestxt >name type
-   ." _code (IP, word)" cr s" " latestxt ;
-
 create snippets 0 , 0 , reveal
 
 : code
@@ -34,18 +31,14 @@ create snippets 0 , 0 , reveal
    target
    latestxt >name header, 0 , ?code, reveal ;
 
+: end-code   ;
+
 create rsnippets 0 , 0 , reveal
 
 : create-rsnippet get-current swap ['] rsnippets set-current dup >name "create , reveal set-current -1 ;
 : create-rsnippets ['] snippets ['] create-rsnippet traverse-wordlist ;
 
-\ [ 0 ] [if]
-\ : dump-rsnippet >body @ ." case " dup >body @ . ." /* " dup >name type ."  */:" cr >body cell+ begin dup c@ ?dup while emit 1+ repeat ." break;" cr drop -1 ;
-\ : dump-snippets ['] rsnippets ['] dump-rsnippet traverse-wordlist ;
-\ [else]
 : dump-rsnippet >body @ ." code[" dup >body @ . ." /* " dup >name type ."  */] = function () {" cr >body cell+ begin dup c@ ?dup while emit 1+ repeat ." };" cr drop -1 ;
 : dump-snippets ['] rsnippets ['] dump-rsnippet traverse-wordlist ;
-\ [then]
-: end-code   ;
 
 \ previous

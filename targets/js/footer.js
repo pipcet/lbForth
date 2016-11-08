@@ -46,7 +46,6 @@ var gLine = "";
 
 function foreign_putchar(c)
 {
-    console.log(c);
     if (c == 10) {
         console.log(gLine);
         gLine = "";
@@ -68,11 +67,11 @@ function foreign_open_file(addr, u, mode)
     var fileid = 0;
 
     if (!(path in load_address))
-       load_file(HEAP, path);
+        load_file(HEAP, path);
 
     if (path in load_address) {
-       fileid = load_address[path];
-       fhs[fileid] = { offset: 0 };
+        fileid = load_address[path];
+        fhs[fileid] = { offset: 0 };
     } else {
         console.log("file not found: " + path)
     }
@@ -187,7 +186,8 @@ function StringAt(heap, offset, length)
     var ret = '';
 
     for (var i0 = offset; length--; i0++) {
-        ret += String.fromCharCode(heap[i0]);
+        if (heap[i0])
+            ret += String.fromCharCode(heap[i0]);
     }
 
     return ret;
