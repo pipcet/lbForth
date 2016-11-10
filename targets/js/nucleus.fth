@@ -79,34 +79,34 @@ code + ( x y -- x+y )
 end-code
 
 code negate
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = -top;
 end-code
 
 code - ( x y -- x+y )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
     HEAP[SP] = ((HEAP[SP]))-top;
 end-code
 
 code >r  ( x -- ) ( R: -- x )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
     RP = RP - 1;
     HEAP[RP] = top;
 end-code
 
 code r> ( -- x ) ( R: x -- )
-    x = HEAP[RP];
+    var x = HEAP[RP];
     RP = RP+1;
     SP = SP-1;
     HEAP[SP] = x;
 end-code
 
 code 2r>
-    x = HEAP[RP];
+    var x = HEAP[RP];
     RP = RP+1;
-    y = HEAP[RP];
+    var y = HEAP[RP];
     RP = RP+1;
     SP = SP-1;
     HEAP[SP] = y;
@@ -115,9 +115,9 @@ code 2r>
 end-code
 
 code 2>r
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
-    y = HEAP[SP];
+    var y = HEAP[SP];
     SP = SP+1;
     RP = RP-1;
     HEAP[RP] = y;
@@ -126,33 +126,34 @@ code 2>r
 end-code
 
 code c! ( c addr -- )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
-    c = HEAP[SP];
+    var c = HEAP[SP];
     SP = SP+1;
     HEAP[top] = c&255;
 end-code
 
 code c@ ( addr -- c )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = HEAP[top]&255;
 end-code
 
 code emit ( c -- )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
     foreign_putchar (top);
 end-code
 
 code dup
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP-1;
     HEAP[SP] = top;
 end-code
 
 code 0=
-    top = HEAP[SP];
+    var top = HEAP[SP];
     //console.log(top + "0=");
+    var c;
     if ((top) == 0)
         c = -1;
     else
@@ -161,7 +162,8 @@ code 0=
 end-code
 
 code 0<
-    top = HEAP[SP];
+    var top = HEAP[SP];
+    var c;
     if (0 <= (top))
         c = 0;
     else
@@ -170,9 +172,10 @@ code 0<
 end-code
 
 code <
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
     //console.log(top + " < " + HEAP[SP]);
+    var c;
     if ((top) > (HEAP[SP]))
         c = -1;
     else
@@ -181,21 +184,21 @@ code <
 end-code
 
 code rot
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = HEAP[SP+2];
     HEAP[SP+2] = HEAP[SP+1];
     HEAP[SP+1] = top;
 end-code
 
 code -rot
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = HEAP[SP+1];
     HEAP[SP+1] = HEAP[SP+2];
     HEAP[SP+2] = top;
 end-code
 
 code nip
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
     HEAP[SP] = top;
 end-code
@@ -209,14 +212,14 @@ code 2drop
 end-code
 
 code 2dup
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP-2;
     HEAP[SP+1] = HEAP[SP+3];
     HEAP[SP] = top;
 end-code
 
 code (loop)
-    W = HEAP[RP]+1;
+    var W = HEAP[RP]+1;
     if (HEAP[RP+1] == W) {
         SP = SP-1;
         HEAP[SP] = -1;
@@ -232,7 +235,7 @@ code 2rdrop
 end-code
 
 code ?dup
-    top = HEAP[SP];
+    var top = HEAP[SP];
     if (top) {
         SP = SP-1;
         HEAP[SP] = top;
@@ -240,7 +243,7 @@ code ?dup
 end-code
 
 code swap
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = HEAP[SP+1];
     HEAP[SP+1] = top;
 end-code
@@ -251,77 +254,77 @@ code over
 end-code
 
 code invert
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = ~top;
 end-code
 
 code xor ( x y -- x^y )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[SP] = HEAP[SP]^top;
 end-code
 
 code or
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[SP] = HEAP[SP]|top;
 end-code
 
 code and ( x y -- x&y )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[SP] = HEAP[SP]&top;
 end-code
 
 code nand ( x y -- ~(x&y) )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[SP] = ~(HEAP[SP]&top);
 end-code
 
 code =
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[SP] = (HEAP[SP]) == (top>>0) ? -1 : 0;
 end-code
 
 code <>
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     //console.log(HEAP[SP] + " <> " + top);
     HEAP[SP] = ((HEAP[SP]) != (top)) ? -1 : 0;
 end-code
 
 code 1+
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = top + 1;
 end-code
 
 code cell+
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = top + 1;
 end-code
 
 code +!
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[top] = (HEAP[top])+(HEAP[SP]);
     SP=SP+1;
 end-code
 
 code 2*
-    top = HEAP[SP];
+    var top = HEAP[SP];
     HEAP[SP] = (top) + (top);
 end-code
 
 code *
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP+1;
     HEAP[SP] = imul(top, HEAP[SP]);
 end-code
 
 code tuck
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP=SP-1;
     HEAP[SP+1] = HEAP[SP+2];
     HEAP[SP+2] = top;
@@ -337,14 +340,14 @@ code close-file ( fileid -- ior )
 end-code
 
 code open-file ( addr u mode -- fileid ior )
-    top = HEAP[SP];
+    var top = HEAP[SP];
     SP = SP+1;
-    y = HEAP[SP];
+    var y = HEAP[SP];
     SP = SP+1;
-    c = HEAP[SP];
+    var c = HEAP[SP];
     SP = SP+1;
 
-    addr = foreign_open_file(c, y, top);
+    var addr = foreign_open_file(c, y, top);
     SP = SP-1;
     HEAP[SP] = addr;
     SP = SP-1;
@@ -355,16 +358,16 @@ code open-file ( addr u mode -- fileid ior )
 end-code
 
 code read-file ( addr u1 fileid -- u2 ior )
-    c = HEAP[SP];
+    var c = HEAP[SP];
     SP = SP+1;
-    z = HEAP[SP];
+    var z = HEAP[SP];
     SP = SP+1;
-    addr = HEAP[SP];
+    var addr = HEAP[SP];
     SP = SP+1;
     SP = SP-3;
 
-    x = HEAP[c+2];
-    y = HEAP[c+1];
+    var x = HEAP[c+2];
+    var y = HEAP[c+1];
 
     if ((x) == (y)) {
        if ((HEAP[c+3]) == 0) {

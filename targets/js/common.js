@@ -2,8 +2,6 @@
  * JavaScript-to-asm.js translator. */
 "use strict";
 
-var docolcomma4_ip = ["docolcomma", 4 + 19];
-
 var heap;
 var HEAP;
 
