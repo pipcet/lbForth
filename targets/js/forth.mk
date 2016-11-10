@@ -20,7 +20,7 @@ $(TFORTH): forth.js
 	chmod u+x $@
 	true
 
-forth.js: $(TDIR)/common.js kernel.js $(TDIR)/runtime.js $(TDIR)/main.js
+forth.js: $(TDIR)/js/common.js kernel.js $(TDIR)/js/runtime.js $(TDIR)/js/main.js
 	cat $^ > $@
 
 kernel.js: b-forth $(DEPS) $(PARAMS) $(META)
