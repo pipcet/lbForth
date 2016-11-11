@@ -346,8 +346,14 @@ code open-file ( addr u mode -- fileid ior )
     SP = SP+1;
     var c = HEAP[SP];
     SP = SP+1;
+    SP -= 3;
 
+    HEAP[imul(1024,1022) + 512] = word;
+    HEAP[imul(1024,1022) + 513] = IP;
+    HEAP[imul(1024,1022) + 514] = SP;
+    HEAP[imul(1024,1022) + 515] = RP;
     var addr = foreign_open_file(c, y, top);
+    SP += 3;
     SP = SP-1;
     HEAP[SP] = addr;
     SP = SP-1;

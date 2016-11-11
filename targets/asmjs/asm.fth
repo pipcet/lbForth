@@ -3,23 +3,33 @@
 \ Adds to FORTH vocabulary: ASSEMBLER CODE.
 \ Creates ASSEMBLER vocabulary.
 
-s" search.fth" included
+\ vocabulary assembler
+\ also assembler definitions
 
-vocabulary assembler
-also assembler definitions
+\ previous definitions  also assembler
 
-create code-line 128 allot
+create snippets 0 , 0 , reveal
 
-: c-function ( a -- )
-   ." xt_t * REGPARM " count type ." _code (xt_t *IP, struct word *word)" cr
-   ." {" cr ;
+: code
+   get-current
+   host
+   ['] snippets set-current
+   create
+   #code @ ,
+   begin refill 0= abort" Refill?" source s" end-code" compare
+   while source move, 10 c, repeat refill drop
+   0 c, reveal set-current
+   target
+   latestxt >name header, 0 , ?code, reveal ;
 
-: c-line ( -- a u flag )    refill 0= abort" End of file inside CODE."
-   code-line dup 128 accept  2dup s" end-code" compare ;
+: end-code   ;
 
-previous definitions  also assembler
+create rsnippets 0 , 0 , reveal
 
-: code ( "name" -- )   here 0 header, reveal  c-function
-   begin c-line while type cr repeat  2drop ." }" cr ;
+: create-rsnippet get-current swap ['] rsnippets set-current dup >name "create , reveal set-current -1 ;
+: create-rsnippets ['] snippets ['] create-rsnippet traverse-wordlist ;
 
-previous
+: dump-rsnippet >body @ ." case " dup >body @ . ." /* " dup >name type ."  */:" cr >body cell+ begin dup c@ ?dup while emit 1+ repeat ." break;" cr drop -1 ;
+: dump-snippets ['] rsnippets ['] dump-rsnippet traverse-wordlist ;
+
+\ previous

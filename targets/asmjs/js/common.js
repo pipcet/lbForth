@@ -2,14 +2,11 @@
  * JavaScript-to-asm.js translator. */
 "use strict";
 
-var docolcomma4_ip = ["docolcomma", 4 + 7];
-
-var heap;
-var HEAPU8;
-var HEAPU32;
+var heap = new ArrayBuffer(1024*1024);
+var HEAPU8 = new Uint8Array(heap);
+var HEAPU32 = new Uint32Array(heap);
 
 var inputstr = "";
-var main;
 
 /* Library functions */
 
@@ -42,7 +39,8 @@ function StringAt(heap, offset, length)
     var ret = '';
 
     for (var i0 = offset; length--; i0++) {
-        ret += String.fromCharCode(heap[i0]);
+        if (heap[i0])
+            ret += String.fromCharCode(heap[i0]);
     }
 
     return ret;

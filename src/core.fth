@@ -98,7 +98,8 @@ create squote   128 allot
 
 : under   postpone >r ' compile, postpone r> ; immediate
 
-: bits/cell   32 ;
+: bits/cell   0 1 begin ?dup while 2* under 1+ repeat
+   postpone literal ; immediate
 
 : rshift   >r 0 begin r> dup bits/cell < while 1+ >r
            2* over 0< if 1+ then under 2* repeat drop nip ;
@@ -110,14 +111,13 @@ create squote   128 allot
 : >   swap < ;
 
 : u/mod ( n d -- r q )
-    -1 and swap -1 and swap
     ?dup 0= abort" Division by zero"
     0 >r 2>r		\ R: q n
-    0 1 begin ?dup while dup 2* -1 and repeat
+    0 1 begin ?dup while dup 2* repeat
     r> 0 begin		\ S: [...1<<i...] d r
       2*		\ r <<= 1
       r@ 0< if 1+ then	\ if n&msb then r++
-      r> 2* -1 and >r		\ n <<= 1
+      r> 2* >r		\ n <<= 1
       2dup > if rot drop else \ if r>=d
         over -		      \ r -= d
         rot r> r> rot + >r >r \ q += 1<<i
@@ -219,7 +219,7 @@ variable hld
 : u+d ( u1 u2 -- d )   dup rot + dup rot u< negate ;
 : d+   >r rot u+d rot + r> + ;
 : d+-   0< if invert swap invert 1 u+d rot + then ;
-: um*   1 2>r 0 0 rot 0 begin r@ -1 and while
+: um*   1 2>r 0 0 rot 0 begin r@ while
            2r> 2dup 2* 2>r and if 2swap 2over d+ 2swap then 2dup d+
         repeat 2drop 2r> 2drop ;
 : m*   2dup xor >r abs swap abs um* r> d+- ;
@@ -307,4 +307,4 @@ rp\ : rp!   postpone (literal) RP , postpone ! ; immediate
 
 : (number) ( a u -- )   0 0 2swap >number  ?dup ?undef 2drop  ?literal ;
 
-\ ' (number) ' number >body !
+' (number) ' number >body !

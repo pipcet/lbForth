@@ -17,14 +17,24 @@ function name(a)
 
 function dump_dictionary()
 {
-    for (let i = 128 * 1024; i < 133 * 1024; i++)
+    for (let i = 128 * 1024; i < 128 * 1024; i++)
         console.log(i + " " + HEAP[i]);
+}
+
+function resume()
+{
+    try {
+        word = HEAP[imul(1024,1022) + 512];
+        IP = HEAP[imul(1024,1022) + 513];
+        SP = HEAP[imul(1024,1022) + 514];
+        RP = HEAP[imul(1024,1022) + 515];
+        main();
+    } catch (e) {
+    }
 }
 
 function main()
 {
-    word = turnkey;
-
     while (true) {
         var c;
         try {
@@ -33,6 +43,8 @@ function main()
             word = HEAP[IP];
             IP++;
         } catch (e) {
+            if (e === 0)
+                throw e;
             console.log("exception " + e);
             console.log("word " + word + "/" + name(word) + " IP " + IP + " c " + c + " TOS " + HEAP[SP] + " TOR " + HEAP[RP]);
             dump_dictionary();
@@ -42,4 +54,15 @@ function main()
     }
 }
 
-main();
+window.onload = () => {
+    vt100 = new VT100FD(undefined, document.body);
+
+    inputstr = "s\" fmacs/src/\" searched include fmacs.fth fmacs\n";
+
+    try {
+        word = turnkey;
+
+        main();
+    } catch (e) {
+    }
+};

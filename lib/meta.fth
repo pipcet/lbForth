@@ -6,12 +6,12 @@ vocabulary compiler
 
 vocabulary t-words
 defer t,
-: t-word ( a u xt -- ) -rot 2dup ." /*" type "create dup . ." */" cr , does> @ t, ;
+: t-word ( a u xt -- ) -rot "create , does> @ t, ;
 : fatal   cr source type cr bye ;
-: ?undef   0= if ." Undefined! " type fatal then ;
+: ?undef   0= if ." Undefined!" fatal then ;
 : t-search   ['] t-words search-wordlist ;
 : defined?   t-search if drop -1 else 0 then ;
-: "' ( u a -- xt ) 2dup t-search ?undef >body @ -rot 2drop ;
+: "' ( u a -- xt ) t-search ?undef >body @ ;
 : t'   parse-name "' ;
 : t-compile   parse-name postpone sliteral postpone "' postpone t, ; immediate
 : t-[compile]   also compiler ' previous compile, ; immediate
@@ -41,11 +41,11 @@ include params.fth
 : >code   code-offset + ;
 : >body   body-offset + ;
 
-0 value 'docol
-0 value 'dovar
-0 value 'docon
-0 value 'dodef
-0 value 'dodoes
+777 value 'docol
+777 value 'dovar
+777 value 'docon
+777 value 'dodef
+777 value 'dodoes
 
 : code,   , ;
 
@@ -57,7 +57,7 @@ include target.fth
 variable #code
 1 #code !
 
-: new-code #code @ #code dup @ 1+ swap ! ;
+: new-code  #code @ #code dup @ 1 + swap ! ;
 : header, ( a u -- ) 2dup align here over >xt drop t-word header, ;
 : ?code, ( -- ) new-code , ;
 
@@ -84,17 +84,44 @@ s" dodef" header, 0 , 0 , here >host 'perform ! 777 , t' exit ,
 
 host also meta definitions
 
-create-rsnippets
-." var global = this;" cr
-." var word = 0;" cr
-." var IP = 0;" cr
-." var SP = 96 * 1024;" cr
-." var RP = 128 * 1024;" cr
-." var HEAP = [];" cr
-." for (let i = 0; i < 1024 * 1024; i++) HEAP[i] = 0;" cr
-." var code = [];" cr
+: exe-header
+   create-rsnippets
+   ." function asmmodule(stdlib, foreign, buffer) {" cr
+   [char] " emit ." use asm" [char] " emit ." ;" cr
+    ." var HEAPU8 = new stdlib.Uint8Array(buffer);" cr
+    ." var HEAPU32 = new stdlib.Uint32Array(buffer);" cr
+    ." var imul = stdlib.Math.imul;" cr
+    ." var foreign_putchar = foreign.foreign_putchar;" cr
+    ." var foreign_sys_open = foreign.foreign_sys_open;" cr
+    ." var foreign_sys_read = foreign.foreign_sys_read;" cr
+    ." var foreign_exit = foreign.foreign_exit;" cr
 
-dump-snippets
+   ." function main(word, IP, SP, RP) {" cr
+   ." word = word|0;" cr
+   ." IP = IP|0;" cr
+   ." SP = SP|0;" cr
+   ." RP = RP|0;" cr
+   ." var addr = 0;" cr
+   ." var x = 0;" cr
+   ." var y = 0;" cr
+   ." var z = 0;" cr
+   ." var c = 0;" cr
+   ." var i = 0;" cr
+   ." var top = 0;" cr
+   ." while (1|0) {" cr
+   ." //console.log([word, name(word), IP, SP, RP, HEAPU32[SP>>2], HEAPU32[RP>>2]]);" cr
+   ." switch (HEAPU32[word+24>>2]|0) {" cr
+   ." case 0:" cr
+   dump-snippets
+   ." }" cr
+   ." word = HEAPU32[IP>>2]|0;" cr
+   ." IP = IP+4|0;" cr
+   ." }" cr
+   ." }" cr
+   ." return { main: main };" cr
+   ." }" cr
+   ;
+exe-header
 
 : >mark   here 0 , ;
 : <mark   here ;
@@ -106,13 +133,13 @@ dump-snippets
 : number, ( a u -- ) 0 0 2over >number nip ?number, ;
 : t-number   ['] number, is number ;
 
-: >t-body 19 + ;
+: >t-body 28 + ;
 
 t' docol >t-body to 'docol
 t' dovar >t-body to 'dovar
 t' docon >t-body to 'docon
 t' dodef >t-body to 'dodef
-7 to 'dodoes
+0 to 'dodoes
 
 : h: : ;
 
@@ -152,9 +179,9 @@ h: does>   t-compile (does>) ;
 
 cell-size t-constant cell
 next-offset t-constant TO_NEXT
-18 t-constant TO_CODE
-19 t-constant TO_BODY
-17 t-constant TO_DOES
+24 t-constant TO_CODE
+28 t-constant TO_BODY
+20 t-constant TO_DOES
 
 'docol t-constant 'docol
 'dovar t-constant 'dovar
@@ -193,11 +220,7 @@ target
 include kernel.fth
 include cold.fth
 
-: mystring s" my very long string" ;
-
 target
-
-t' perform 'perform @ !
 
 only forth also meta also t-words resolve-all-forward-refs
 
@@ -205,9 +228,10 @@ only forth also meta
 
 host also meta also forth definitions
 
+t' perform 'perform @ !
 ." var turnkey = " t' turnkey . ." ;" cr
 ." var i = 0;" cr
 
-0 target here host also meta also target-image dump-target-region host only forth swap 2dup js-dump ." /*" cr dump ." */" cr
+0 target here host also meta also target-image hex dump-target-region decimal host only forth swap 2dup js-dump ." /*" cr dump ." */" cr
 
 ." /* Meta-OK */" cr
