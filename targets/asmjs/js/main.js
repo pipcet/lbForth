@@ -43,7 +43,6 @@ function _resume()
         HEAPU32[1022*1024 + 524>>2] = 0;
         module.main(word, IP, SP, RP);
     } catch (e) {
-        console.log("exception main: " + e);
     }
 }
 
@@ -60,6 +59,7 @@ window.onload = () => {
         vt100 = new VT100FD(undefined, document.body);
 
     inputstr = "s\" fmacs/src/\" searched include fmacs.fth fmacs\n";
+    inputstr = "bye\n";
 
     console.log("launching main");
 
@@ -68,7 +68,6 @@ window.onload = () => {
 
         module.main(word, 0, 64*1024, 128*1024);
     } catch (e) {
-        console.log("exception main: " + e);
     }
 };
 

@@ -1,4 +1,4 @@
-\ "Assembler" for C target.
+\ "Assembler" for asm.js target. Copyright 2016 Lars Brinkhoff, Pip Cet
 
 \ Adds to FORTH vocabulary: ASSEMBLER CODE.
 \ Creates ASSEMBLER vocabulary.

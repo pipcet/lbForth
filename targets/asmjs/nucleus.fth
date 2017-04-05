@@ -107,10 +107,10 @@ end-code
 code 2r>
     x = HEAPU32[RP>>2]|0;
     RP = RP+4|0;
-    y = HEAPU32[RP>>2]|0;
+    addr = HEAPU32[RP>>2]|0;
     RP = RP+4|0;
     SP = SP-4|0;
-    HEAPU32[SP>>2] = y;
+    HEAPU32[SP>>2] = addr;
     SP = SP-4|0;
     HEAPU32[SP>>2] = x;
 end-code
@@ -118,10 +118,10 @@ end-code
 code 2>r
     top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
-    y = HEAPU32[SP>>2]|0;
+    x = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     RP = RP-4|0;
-    HEAPU32[RP>>2] = y;
+    HEAPU32[RP>>2] = x;
     RP = RP-4|0;
     HEAPU32[RP>>2] = top;
 end-code
@@ -129,9 +129,9 @@ end-code
 code c! ( c addr -- )
     top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
-    c = HEAPU32[SP>>2]|0;
+    x = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
-    HEAPU8[top] = c&255;
+    HEAPU8[top] = x&255;
 end-code
 
 code c@ ( addr -- c )
@@ -154,29 +154,29 @@ end-code
 code 0=
     top = HEAPU32[SP>>2]|0;
     if ((top|0) == 0)
-        c = -1;
+        x = -1;
     else
-        c = 0;
-    HEAPU32[SP>>2] = c;
+        x = 0;
+    HEAPU32[SP>>2] = x;
 end-code
 
 code 0<
     top = HEAPU32[SP>>2]|0;
     if (0 <= (top|0))
-        c = 0;
+        x = 0;
     else
-        c = -1;
-    HEAPU32[SP>>2] = c;
+        x = -1;
+    HEAPU32[SP>>2] = x;
 end-code
 
 code <
     top = HEAPU32[SP>>2]|0;
     SP = SP+4|0;
     if ((top|0) > (HEAPU32[SP>>2]|0))
-        c = -1;
+        x = -1;
     else
-        c = 0;
-    HEAPU32[SP>>2] = c;
+        x = 0;
+    HEAPU32[SP>>2] = x;
 end-code
 
 code rot

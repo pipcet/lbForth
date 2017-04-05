@@ -6,8 +6,6 @@ var filesystem = {};
 
 function load_file(heapu8, path)
 {
-    console.log("load_file " + path);
-
     if (path.match(/\/$/))
         return;
 
@@ -22,10 +20,7 @@ function load_file(heapu8, path)
         HEAPU32[next_load_address+12>>2] = 0; // call slow_read flag
         next_load_address += 32 + load_size[path];
     } catch (e) {
-        console.log("file not found: " + path)
     }
-
-    console.log("load_file " + path);
 }
 
 var gLine = "";
@@ -33,12 +28,6 @@ var gLine = "";
 function foreign_putchar(c)
 {
     putstr(String.fromCharCode(c));
-    if (c == 10) {
-        console.log(gLine);
-        gLine = "";
-    } else {
-        gLine += String.fromCharCode(c);
-    }
 
     return 0;
 }
@@ -55,8 +44,6 @@ function foreign_open_file(addr, u, mode)
     var path = StringAt(HEAPU8, addr, u);
     var mode = CStringAt(HEAPU8, mode);
     mode = mode.substr(0, 1);
-
-    console.log("open_file " + addr + " " + path + " " + mode + " " + u);
 
     var fileid = 0;
 
@@ -84,7 +71,6 @@ function foreign_open_file(addr, u, mode)
                 resume();
                 throw 0;
             } else {
-                console.log("fileid " + 0);
                 return 0;
             }
         } else {
@@ -104,8 +90,6 @@ function foreign_open_file(addr, u, mode)
 
         throw 0;
     }
-
-    console.log("fileid " + fileid);
 
     return fileid;
 }
@@ -127,7 +111,6 @@ function foreign_read_file(addr, u1, fileid)
                try {
                    str = readline();
                } catch (e) {
-                   console.log(e);
                    throw 0;
                    str = window.prompt("lbForth:");
                }
@@ -135,7 +118,6 @@ function foreign_read_file(addr, u1, fileid)
            if (str) str = str + "\n"
        }
         if (!str) {
-            console.log("empty string");
            foreign_exit(0);
            throw 0;
        }
@@ -221,6 +203,6 @@ function foreign_sys_read(xt, IP, SP, RP)
 
 function foreign_exit ()
 {
-    console.log("exit");
-    while (1);
+    while (1)
+        quit(0);
 }
