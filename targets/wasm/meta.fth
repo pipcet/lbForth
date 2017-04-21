@@ -1,0 +1,207 @@
+1 constant t-little-endian
+s" targets/wasm/" searched
+
+require search.fth
+
+vocabulary compiler
+
+vocabulary t-words
+defer t,
+: t-word ( a u xt -- )  -rot "create , does> @ t, ;
+: fatal   cr source type cr bye ;
+: ?undef   0= if ." Undefined!" fatal then ;
+: t-search   ['] t-words search-wordlist ;
+: defined?   t-search if drop -1 else 0 then ;
+: "' ( u a -- xt ) t-search ?undef >body @ ;
+: t'   parse-name "' ;
+: t-compile   parse-name postpone sliteral postpone "' postpone t, ; immediate
+: t-[compile]   also compiler ' previous compile, ; immediate
+: t-literal   t-compile (literal) t, ;
+: t-constant   create , does> @ t-literal ;
+
+: already-defined?   >in @ >r parse-name defined? r> >in ! ;
+: trailing-semicolon?   source 1- + c@ [char] ; = ;
+: ignore-definition   begin trailing-semicolon? postpone \ until ;
+
+variable leaves
+: 0leaves   0 leaves ! ;
+: leaves@   leaves @ ;
+
+vocabulary meta
+create code-line 128 allot
+only forth also meta definitions
+: h-align align ;
+: h-here here ;
+: h-c, c, ;
+include lib/image.fth
+
+0 value latest
+
+' , is t,
+
+s" " searched
+s" src/" searched
+include params.fth
+: >link   next-offset + ;
+: >code   code-offset + ;
+: >body   body-offset + ;
+
+0 value 'docol
+0 value 'dovar
+0 value 'docon
+0 value 'dodef
+0 value 'dodoes
+
+: code,   , ;
+
+: link, ( nt -- ) latest ,  to latest ;
+: reveal ;
+
+include target.fth
+
+: ?code, ( -- ) here cell+ , ;
+
+: host   only forth definitions host-image ;
+
+include asm.fth
+
+hex 36 #total-cases !
+0 #cases !
+: header, ( a u -- ) 2dup target-image align here t-word header, ;
+include lib/xforward.fth
+
+only forth definitions also meta
+: target   only forth also meta also t-words definitions previous target-image ;
+
+target
+load-address org
+exe-header
+
+include nucleus.fth
+
+host also meta definitions
+: code ( "name" -- )   parse-name header, 0 , #cases @ , reveal here ;
+: end-code dp ! 1 #cases +! ;
+
+0 #cases !
+
+target
+include nucleus.fth
+host also meta definitions
+
+: >mark   here 0 , ;
+: <mark   here ;
+: >resolve   here swap ! ;
+: <resolve   , ;
+
+: h-number   [ action-of number ] literal is number ;
+: ?number,   if 2drop undef fatal else drop t-literal 2drop then ;
+: number, ( a u -- ) 0 0 2over >number nip ?number, ;
+: t-number   ['] number, is number ;
+
+also target-image
+: >codeid >code @ ;
+previous
+
+0 to 'dodoes
+7 to 'docol
+8 to 'dovar
+9 to 'docon
+hex A to 'dodef
+decimal
+
+: h: : ;
+
+h: '   t' ;
+h: ]   only forward-refs also t-words also compiler  t-number ;
+h: :   parse-name header, docol, ] ;
+h: create   parse-name header, dovar, ;
+h: variable   create cell allot ;
+h: defer   parse-name header, dodef, t-compile abort ;
+h: constant   parse-name header, docon, , ;
+h: value   constant ;
+h: immediate   latest >nfa dup c@ negate swap c! ;
+h: to   ' >body ! ;
+h: is   ' >body ! ;
+h: [defined]   parse-name defined? ;
+h: [undefined]   [defined] 0= ;
+
+h: ?:   already-defined? if ignore-definition else : then ;
+
+only forth also meta also compiler definitions previous
+
+h: \   postpone \ ;
+h: (   postpone ( ;
+h: [if]   postpone [if] ;
+h: [else]   postpone [else] ;
+h: [then]   postpone [then] ;
+
+h: [   target h-number ;
+h: ;   t-compile exit t-[compile] [ ;
+
+h: [']   ' t-literal ;
+h: [char]   char t-literal ;
+h: literal   t-literal ;
+h: compile   ' t-literal t-compile , ;
+h: [compile]   ' , ;
+h: does>   t-compile (does>) ;
+
+cell-size t-constant cell
+next-offset t-constant TO_NEXT
+code-offset t-constant TO_CODE
+does-offset t-constant TO_DOES
+body-offset t-constant TO_BODY
+
+'docol t-constant 'docol   
+'dovar t-constant 'dovar   
+'docon t-constant 'docon   
+'dodef t-constant 'dodef   
+'dodoes t-constant 'dodoes   
+
+h: s"   t-compile (sliteral) parse" dup , ", ;
+h: ."   t-[compile] s" t-compile type ;
+
+h: if   t-compile 0branch >mark ;
+h: ahead   t-compile branch >mark ;
+h: then   >resolve ;
+
+h: begin   <mark ;
+h: again   t-compile branch <resolve ;
+h: until   t-compile 0branch <resolve ;
+
+h: else   t-[compile] ahead swap t-[compile] then ;
+h: while    t-[compile] if swap ;
+h: repeat   t-[compile] again t-[compile]  then ;
+
+h: to   ' >body t-literal t-compile ! ;
+h: is   t-[compile] to ;
+
+h: do   0leaves  t-compile 2>r  t-[compile] begin ;
+h: loop   t-compile (loop) t-[compile] until  here leaves@ chains!  t-compile 2rdrop ;
+h: leave   t-compile branch  leaves chain, ;
+
+h: abort"   t-[compile] if t-[compile] s" t-compile cr t-compile type
+   t-compile cr t-compile abort t-[compile] then ;
+
+\ only forth :noname 2dup type space (parsed) ; is parsed
+target
+
+include kernel.fth
+include cold.fth
+
+only forth also meta also t-words resolve-all-forward-refs
+
+also meta
+
+\ exe-header
+
+
+only forth also meta also assembler
+decimal 1024 hex >host data-sec @ sec-pointer0> !
+t-dp @ >host data-sec @ sec-pointer1> !
+
+write-pre-code
+write-post-code
+hex
+size-sections
+write-sections
