@@ -15,15 +15,44 @@ var params = {
     rp0: 767 * 1024,
 };
 
-if (typeof console === "undefined") {
+var read_file;
+var read_line;
+var bye;
+var gInputLine = "";
+
+if (typeof(os) !== "undefined") {
+    /* SpiderMonkey shell */
+
+    read_file = function (path) { return os.file.readFile(path, "utf-8"); };
+    read_line = readline;
+    if (typeof console === "undefined") {
+        this.console = {};
+        this.console.log = print;
+    }
+    bye = function () { quit(0); };
+} else if (typeof(require) !== "undefined") {
+    /* Node.js */
+
+    var fs = require('fs');
+    read_file = function (a) { return fs.readFileSync(a, "utf-8"); };
+    bye = function () { process.exit(0); };
+
+    var readline = require('readline');
+    var rl = readline.createInterface({ input: process.stdin });
+    rl.on('line', function (data) {
+        gInputLine += data;
+        resume();
+    });
+} else if (typeof(snarf) !== "undefined") {
+    /* old SpiderMonkey shell */
+
+    read_file = function (path) { return snarf(path, "utf-8"); };
+    read_line = readline;
     this.console = {};
     this.console.log = print;
-}
-var fs = require('fs');
-if (typeof os === "undefined") {
-    this.os = {};
-    this.os.file = {};
-    this.os.file.readFile = function (a,b) { return fs.readFileSync(a, b) };
+    bye = function () { quit(0); };
+} else {
+    /* Web? */
 }
 
 var heap = new ArrayBuffer(params.memsize);
@@ -33,7 +62,6 @@ var HEAPU32 = new Uint32Array(heap);
 /* console I/O */
 
 var gLine = "";
-var gInputLine = "";
 
 function clog(addr) /* unused? */
 {
@@ -91,7 +119,7 @@ var startDate = new Date();
 
 function foreign_bye(c)
 {
-    quit(0);
+    bye();
 }
 
 function foreign_dump(c)
@@ -112,7 +140,7 @@ function load_file(heapu8, path)
 {
     var str;
     try {
-        str = fs.readFileSync(path, "utf8");
+        str = read_file(path);
         if (str === undefined)
             return;
     } catch(e) {
@@ -194,7 +222,10 @@ function foreign_read_file(addr, u1, fileid)
        var str = gInputLine;
        gInputLine = "";
        while (str === "") {
-           return -2;
+           if (read_line)
+               str = read_line();
+           else
+               return -2;
        }
 
        if (!str)
@@ -589,7 +620,7 @@ code read-file
             i = 0;
         else
             i = foreign_read_file(addr|0, z|0, c|0)|0;
-        if (i == -2) {
+        if ((i|0) == -2) {
             SP = SP-16|0;
             HEAPU32[SP>>2] = IP|0;
             SP = SP-4|0;
@@ -619,6 +650,8 @@ start-code
         word = HEAPU32[IP>>2]|0;
         IP = IP + 4|0;
     }
+
+    return 0;
 }
 
     return { asmmain: asmmain };
@@ -651,7 +684,6 @@ function run(turnkey)
 
 function resume()
 {
-    console.log("resuming");
     var sp = global_sp;
     var word = HEAPU32[sp>>2];
     sp += 4;
@@ -667,12 +699,4 @@ function resume()
         console.log(e);
     }
 }
-
-var readline = require('readline');
-var rl = readline.createInterface({ input: process.stdin });
-rl.on('line', function (data) {
-    gInputLine += data;
-    resume();
-});
-
 end-code
