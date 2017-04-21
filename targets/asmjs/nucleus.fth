@@ -19,10 +19,11 @@ if (typeof console === "undefined") {
     this.console = {};
     this.console.log = print;
 }
+var fs = require('fs');
 if (typeof os === "undefined") {
     this.os = {};
     this.os.file = {};
-    this.os.file.readFile = snarf;
+    this.os.file.readFile = function (a,b) { return fs.readFileSync(a, b) };
 }
 
 var heap = new ArrayBuffer(params.memsize);
@@ -32,6 +33,7 @@ var HEAPU32 = new Uint32Array(heap);
 /* console I/O */
 
 var gLine = "";
+var gInputLine = "";
 
 function clog(addr) /* unused? */
 {
@@ -110,7 +112,7 @@ function load_file(heapu8, path)
 {
     var str;
     try {
-        str = os.file.readFile(path, "utf-8");
+        str = fs.readFileSync(path, "utf8");
         if (str === undefined)
             return;
     } catch(e) {
@@ -189,10 +191,12 @@ function foreign_read_file(addr, u1, fileid)
        fhs[0] = { offset: 1023 * 1024 };
        for (var i = 0; i < 1024; i++)
            HEAPU8[1023 * 1024 + i] = 0;
-       var str;
-       do {
-           str = readline();
-       } while (str === "");
+       var str = gInputLine;
+       gInputLine = "";
+       while (str === "") {
+           return -2;
+       }
+
        if (!str)
           foreign_bye(0);
        var len = CStringTo(str, HEAPU8, fhs[0].offset + 32);
@@ -581,17 +585,27 @@ code read-file
     y = HEAPU32[c+4>>2]|0;
 
     if ((x|0) == (y|0)) {
-       if ((HEAPU32[c+12>>2]|0) != 0)
-           i = 0;
-       else
-           i = foreign_read_file(addr|0, z|0, c|0)|0;
+        if ((HEAPU32[c+12>>2]|0) != 0)
+            i = 0;
+        else
+            i = foreign_read_file(addr|0, z|0, c|0)|0;
+        if (i == -2) {
+            SP = SP-16|0;
+            HEAPU32[SP>>2] = IP|0;
+            SP = SP-4|0;
+            HEAPU32[SP>>2] = RP|0;
+            SP = SP-4|0;
+            HEAPU32[SP>>2] = word|0;
+
+            return SP|0;
+        }
     } else {
-       if ((z>>>0) > ((x-y)>>>0))
-           z = (x-y)|0;
-       for (i = 0; (i>>>0) < (z>>>0); i = (i+1)|0) {
-           HEAPU8[(addr+i)|0] = HEAPU8[(c+32+y+i)|0]|0;
-       }
-       HEAPU32[c+4>>2] = (y + i)|0;
+        if ((z>>>0) > ((x-y)>>>0))
+            z = (x-y)|0;
+        for (i = 0; (i>>>0) < (z>>>0); i = (i+1)|0) {
+            HEAPU8[(addr+i)|0] = HEAPU8[(c+32+y+i)|0]|0;
+        }
+        HEAPU32[c+4>>2] = (y + i)|0;
     }
 
     SP = SP-4|0;
@@ -611,6 +625,7 @@ start-code
 }
 
 var asmmodule;
+var global_sp;
 
 function run(turnkey)
 {
@@ -628,9 +643,36 @@ function run(turnkey)
         }, heap);
 
     try {
-        asmmodule.asmmain(turnkey, params.dictoff, params.sp0, params.rp0);
+        return global_sp = asmmodule.asmmain(turnkey, params.dictoff, params.sp0, params.rp0);
     } catch (e) {
-        console.log(e)
+        console.log(e);
     }
 }
+
+function resume()
+{
+    console.log("resuming");
+    var sp = global_sp;
+    var word = HEAPU32[sp>>2];
+    sp += 4;
+    var RP = HEAPU32[sp>>2];
+    sp += 4;
+    var IP = HEAPU32[sp>>2];
+    sp += 4;
+    var SP = sp;
+
+    try {
+        global_sp = asmmodule.asmmain(word, IP, SP, RP);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+var readline = require('readline');
+var rl = readline.createInterface({ input: process.stdin });
+rl.on('line', function (data) {
+    gInputLine += data;
+    resume();
+});
+
 end-code
