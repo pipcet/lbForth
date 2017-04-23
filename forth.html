@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <title>lbForth</title>
+    <script type="application/javascript"
+            src="forth.js"
+            defer="defer">
+    </script>
+    <script>
+      function putstr(str) {
+          var node = document.getElementById("output");
+          node.innerHTML += str + "\n";
+      }
+    </script>
+    <script defer="defer">
+      window.onload = function () {
+      var node = document.getElementById("input");
+      document.getElementsByTagName("form")[0].addEventListener("submit", function (e) {
+          gInputLine += node.value;
+          node.value = "";
+          resume("//line");
+          e.preventDefault();
+      });
+      }
+
+    </script>
+  </head>
+  <body>
+    <pre>
+      <div id="output"></div>
+    </pre>
+    <form>
+      <input id="input"/>
+    </form>
+  </body>
+</html>
