@@ -33,7 +33,11 @@ if (typeof(os) !== "undefined") {
     /* SpiderMonkey shell */
 
     read_file_async = function (path, cb) {
-        cb(os.file.readFile(path, "utf-8"));
+        try {
+            cb(os.file.readFile(path, "utf-8"));
+        } catch (e) {
+            cb();
+        }
     };
     read_line = readline;
     if (typeof console === "undefined") {
@@ -62,7 +66,11 @@ if (typeof(os) !== "undefined") {
     /* old SpiderMonkey shell */
 
     read_file_async = function (path, cb) {
-        cb(snarf(path, "utf-8"));
+        try {
+            cb(snarf(path, "utf-8"));
+        } catch (e) {
+            cb();
+        }
     };
     read_line = readline;
     this.console = {};
