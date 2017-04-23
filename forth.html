@@ -1,27 +1,26 @@
 <html>
   <head>
     <title>lbForth</title>
-    <script type="application/javascript"
-            src="forth.js"
-            defer="defer">
-    </script>
     <script>
-      function putstr(str) {
-          var node = document.getElementById("output");
-          node.innerHTML += str + "\n";
+      window.onload = function () {
+          var node = document.getElementById("input");
+          document.getElementsByTagName("form")[0].addEventListener("submit", function (e) {
+              forth_output(node.value + "\n");
+              forth_input(node.value + "\n");
+              node.value = "";
+              e.preventDefault();
+          });
+      };
+
+      function forth_output(str)
+      {
+          var n = document.getElementById("output");
+
+          if (n) n.innerHTML += str;
       }
     </script>
-    <script defer="defer">
-      window.onload = function () {
-      var node = document.getElementById("input");
-      document.getElementsByTagName("form")[0].addEventListener("submit", function (e) {
-          gInputLine += node.value;
-          node.value = "";
-          resume("//line");
-          e.preventDefault();
-      });
-      }
-
+    <script type="application/javascript"
+            src="forth.js">
     </script>
   </head>
   <body>
