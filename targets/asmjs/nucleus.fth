@@ -22,6 +22,13 @@ var gInputLine = "";
 var resume_string = undefined;
 var put_string;
 
+function forth_input(str)
+{
+    str = str.replace(/\n$/, "");
+    gInputLine += str;
+    resume("//line");
+}
+
 if (typeof(os) !== "undefined") {
     /* SpiderMonkey shell */
 
@@ -62,14 +69,31 @@ if (typeof(os) !== "undefined") {
     this.console.log = print;
     bye = function () { quit(0); };
     put_string = this.console.log;
-} else {
-    /* Web? */
+} else if (false && typeof(fetch) !== "undefined") {
+    /* Web */
 
     read_file_async = function (path, cb) {
-        fetch(path).then(x => x.text()).then(str => cb(str)).catch(str => cb());
+        fetch(path).then(function(x) { return x.text(); }).then(function(str) { return cb(str); }).catch(function (str) { cb() });
     };
     put_string = function (str) {
-        document.getElementById("output").innerHTML += str + "\n";
+        forth_output(str + "\n");
+    };
+} else {
+    /* Web */
+
+    read_file_async = function (path, cb) {
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function () {
+            if (req.readyState == 4 && req.status == 200)
+                cb(req.responseText);
+            else if (req.readyState == 4)
+                cb();
+        };
+        req.open("GET", path);
+        req.send();
+    };
+    put_string = function (str) {
+        forth_output(str + "\n");
     };
 }
 
