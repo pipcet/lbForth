@@ -685,6 +685,9 @@ function run(turnkey)
 function resume()
 {
     var sp = global_sp;
+    if (!global_sp)
+        return;
+
     var word = HEAPU32[sp>>2];
     sp += 4;
     var RP = HEAPU32[sp>>2];
@@ -694,6 +697,7 @@ function resume()
     var SP = sp;
 
     try {
+        global_sp = 0;
         global_sp = asmmodule.asmmain(word, IP, SP, RP);
     } catch (e) {
         console.log(e);
